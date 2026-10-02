@@ -19,7 +19,8 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
   box-sizing: border-box;
   max-width: 680px;
   margin: 0 auto;
-  padding: 20px 16px 16px;
+  padding: 14px 16px 20px;
+  border-top: 2px solid var(--vrn-tinta);
   background: var(--vrn-fundo);
   color: var(--vrn-tinta);
   font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -31,9 +32,9 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 .vrn p { margin: 0; padding: 0; }
 
 /* Dentro de iframe a matéria já dá as margens: o gráfico usa a coluna toda */
-.vrn.vrn-iframe { max-width: none; margin: 0; padding: 4px 2px 2px; }
+.vrn.vrn-iframe { max-width: none; margin: 0; padding: 14px 2px 20px; }
 
-.vrn-chapeu { font-size: 14px; font-weight: 500; letter-spacing: .02em; text-transform: uppercase; margin-bottom: 6px; }
+.vrn-chapeu { font-size: 14px; font-weight: 500; letter-spacing: .02em; text-transform: uppercase; margin-bottom: 4px; }
 .vrn-chapeu::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--vrn-destaque); vertical-align: 1px; }
 .vrn-titulo { font-size: 24px; font-weight: 900; line-height: 1.15; letter-spacing: -0.01em; }
 .vrn-sub { margin-top: 4px; font-size: 14px; color: var(--vrn-tinta-2); }
@@ -49,7 +50,7 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 }
 .vrn-aba:hover { color: var(--vrn-tinta); }
 .vrn-aba[aria-pressed="true"] { background: var(--vrn-tinta); color: #ffffff; }
-.vrn-aba:focus-visible, .vrn-rever:focus-visible, .vrn summary:focus-visible { outline: 2px solid var(--vrn-destaque); outline-offset: 2px; }
+.vrn-aba:focus-visible, .vrn-rever:focus-visible, .vrn-btn-tabela:focus-visible { outline: 2px solid var(--vrn-destaque); outline-offset: 2px; }
 .vrn-progresso { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--vrn-destaque); }
 .vrn-rever {
   appearance: none; border: 0; background: none; margin: 0; padding: 8px 2px;
@@ -103,6 +104,11 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 .vrn-barra-valor { margin-left: 8px; font-size: 13.5px; font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; opacity: 0; transition: opacity .3s ease; }
 .vrn-barra.visivel .vrn-barra-valor { opacity: 1; }
 
+/* Pouca altura: letra menor e menos folga */
+.vrn-compacto .vrn-barra, .vrn-compacto .vrn-pir { gap: 1px; }
+.vrn-compacto .vrn-barra-rotulo, .vrn-compacto .vrn-barra-valor { font-size: 12px; }
+.vrn-compacto .vrn-barra-rotulo span, .vrn-compacto .vrn-pir-rotulo, .vrn-compacto .vrn-pir-valor { font-size: 11.5px; }
+
 /* Pirâmide (dois lados) */
 .vrn-piramide { display: flex; flex-direction: column; justify-content: center; justify-content: safe center; height: 100%; }
 .vrn-pir-chaves { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 500; margin-bottom: 4px; }
@@ -130,12 +136,19 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 
 /* Rodapé e tabela */
 .vrn figcaption { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--vrn-linha); font-size: 12.5px; color: var(--vrn-tinta-3); }
-.vrn-rodape { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.vrn-rodape p { flex: 1; }
-.vrn-logo { display: block; flex: none; width: 126px; height: auto; margin-top: 2px; }
-.vrn details { margin-top: 8px; }
-.vrn summary { cursor: pointer; font-size: 13px; font-weight: 500; color: var(--vrn-tinta-2); width: max-content; }
-.vrn table { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+/* Botão da tabela e assinatura na mesma linha */
+.vrn-acoes { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 12px; margin-top: 12px; }
+.vrn-btn-tabela {
+  appearance: none; margin: 0; min-height: 40px; padding: 9px 16px; border: 1px solid var(--vrn-tinta); border-radius: 6px;
+  background: var(--vrn-fundo); color: var(--vrn-tinta); font-family: inherit; font-size: 14px; font-weight: 500; line-height: 1.2; cursor: pointer;
+}
+.vrn-btn-tabela:hover { background: var(--vrn-tinta); color: #ffffff; }
+.vrn-logo { display: block; flex: none; width: 126px; height: auto; }
+/* A tabela aparece no lugar do gráfico (o iframe tem altura fixa) */
+.vrn-tabela { display: none; margin-top: 16px; overflow: auto; }
+.vrn.vrn-com-tabela .vrn-tabela { display: block; }
+.vrn.vrn-com-tabela .vrn-controles, .vrn.vrn-com-tabela .vrn-paineis, .vrn.vrn-com-tabela .vrn-palco, .vrn.vrn-com-tabela .vrn-legendas { display: none; }
+.vrn table { width: 100%; margin: 0; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 .vrn th, .vrn td { padding: 7px 4px; border-bottom: 1px solid var(--vrn-linha); text-align: right; font-weight: 400; }
 .vrn th:first-child, .vrn td:first-child { text-align: left; }
 .vrn thead th { font-size: 12.5px; font-weight: 500; color: var(--vrn-tinta-3); }
@@ -147,7 +160,7 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
   .vrn-num { font-size: 48px; }
   .vrn-num-m { font-size: 36px; }
   .vrn-controles { gap: 8px; }
-  .vrn-rodape { flex-direction: column; gap: 10px; }
+  .vrn-logo { width: 100px; }
 }
 @media (max-width: 360px) {
   .vrn-aba { font-size: 13px; padding: 8px 4px; }

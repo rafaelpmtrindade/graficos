@@ -108,9 +108,11 @@
 
     return {
       desenhar: function (W, H) {
-        var alt = Math.max(34, Math.min(60, H / linhas.length));
+        // linhas encolhem até 26px quando falta altura (celular estreito); abaixo de 32px, letra menor
+        var alt = Math.max(26, Math.min(60, H / linhas.length));
+        box.classList.toggle('vrn-compacto', alt < 32);
         box.style.setProperty('--vrn-linha', alt + 'px');
-        box.style.setProperty('--vrn-espessura', Math.max(10, Math.min(22, Math.round(alt * 0.36))) + 'px');
+        box.style.setProperty('--vrn-espessura', Math.max(8, Math.min(22, Math.round(alt * 0.36))) + 'px');
         util = Math.max(40, W - 64); // sobra para o número na ponta
         linhas.forEach(function (o) { if (o.row.classList.contains('visivel')) largura(o); });
       },
@@ -168,9 +170,10 @@
 
     return {
       desenhar: function (W, H) {
-        var alt = Math.max(30, Math.min(52, (H - chaves.offsetHeight - 4) / linhas.length));
+        var alt = Math.max(26, Math.min(52, (H - chaves.offsetHeight - 4) / linhas.length));
+        box.classList.toggle('vrn-compacto', alt < 32);
         box.style.setProperty('--vrn-linha', alt + 'px');
-        box.style.setProperty('--vrn-espessura', Math.max(10, Math.min(20, Math.round(alt * 0.4))) + 'px');
+        box.style.setProperty('--vrn-espessura', Math.max(8, Math.min(20, Math.round(alt * 0.4))) + 'px');
         meia = Math.max(30, (W - 2) / 2 - 56); // sobra para o número na ponta
         linhas.forEach(function (o) { if (o.row.classList.contains('visivel')) larguras(o); });
       },
@@ -206,7 +209,7 @@
   var TIPOS = { pontos: Pontos, barras: Barras, piramide: Piramide };
 
   function tabelaHtml(t) {
-    var h = '<details><summary>Ver os números em tabela</summary><table><thead><tr>' +
+    var h = '<table><thead><tr>' +
       t.colunas.map(function (c) { return '<th scope="col">' + c + '</th>'; }).join('') + '</tr></thead><tbody>';
     t.grupos.forEach(function (g) {
       if (g.titulo) h += '<tr class="vrn-grupo"><th scope="rowgroup" colspan="' + t.colunas.length + '">' + g.titulo + '</th></tr>';
@@ -214,7 +217,7 @@
         h += '<tr><th scope="row">' + l[0] + '</th>' + l.slice(1).map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>';
       });
     });
-    return h + '</tbody></table></details>';
+    return h + '</tbody></table>';
   }
 
   function grafico(cfg) {
@@ -238,8 +241,10 @@
     h += '<div class="vrn-palco"><div class="vrn-dica" role="presentation"></div>' +
       cfg.passos.map(function (p, i) { return '<div class="vrn-camada' + (i ? '' : ' ativa') + '" aria-hidden="true"></div>'; }).join('') + '</div>';
     h += '<div class="vrn-legendas">' + cfg.passos.map(function (p, i) { return '<p class="vrn-legenda' + (i ? '' : ' ativo') + '">' + (p.legenda || '') + '</p>'; }).join('') + '</div>';
-    h += '<figcaption><div class="vrn-rodape"><p>' + cfg.fonte + '</p><img class="vrn-logo" width="126" height="14" alt="Vila Rica News" src="../comum/logo-vrn.png"></div>' +
-      tabelaHtml(cfg.tabela) + '</figcaption>';
+    h += '<div class="vrn-tabela" id="vrn-tabela">' + tabelaHtml(cfg.tabela) + '</div>';
+    h += '<figcaption><p>' + cfg.fonte + '</p><div class="vrn-acoes">' +
+      '<button type="button" class="vrn-btn-tabela" aria-expanded="false" aria-controls="vrn-tabela">Ver os números em tabela</button>' +
+      '<img class="vrn-logo" width="126" height="14" alt="Vila Rica News" src="../comum/logo-vrn.png"></div></figcaption>';
     raiz.innerHTML = h;
 
     var abas = raiz.querySelectorAll('.vrn-aba');
@@ -248,20 +253,26 @@
     var camadas = raiz.querySelectorAll('.vrn-camada');
     var palco = raiz.querySelector('.vrn-palco');
     var dica = raiz.querySelector('.vrn-dica');
-    var detalhes = raiz.querySelector('details');
+    var caixaTabela = raiz.querySelector('.vrn-tabela');
+    var btnTabela = raiz.querySelector('.vrn-btn-tabela');
     var vis = cfg.passos.map(function (p, i) { return TIPOS[p.vis.tipo](camadas[i], p.vis, reduzido); });
     var atual = 0;
 
     // Altura do palco: no iframe, o que sobra da altura do iframe; solto na página, proporcional à largura
     function layout() {
+      // com a tabela aberta, ela ocupa o espaço do gráfico (no iframe, a altura que sobra)
+      if (raiz.classList.contains('vrn-com-tabela')) {
+        if (!emIframe) { caixaTabela.style.height = ''; return; }
+        caixaTabela.style.height = '1px';
+        var sobra = raiz.getBoundingClientRect().height - 1;
+        caixaTabela.style.height = Math.max(120, Math.floor(window.innerHeight - sobra - 2)) + 'px';
+        return;
+      }
       var W = palco.clientWidth, H;
       if (emIframe) {
-        var aberto = detalhes.open;
-        detalhes.open = false;
         // 1px e não 0: com altura zero as margens de cima e de baixo do palco se fundem e a conta erra
         palco.style.height = '1px';
         var resto = raiz.getBoundingClientRect().height - 1;
-        detalhes.open = aberto;
         H = Math.max(200, Math.floor(window.innerHeight - resto - 2));
       } else {
         H = Math.round(Math.max(240, Math.min(420, W * 0.6)));
@@ -339,6 +350,18 @@
     abas.forEach(function (a) { a.addEventListener('click', function () { parar(); irPara(+a.dataset.passo, true); }); });
     raiz.querySelector('.vrn-rever').addEventListener('click', function () { if (reduzido) irPara(0, false); else tocar(); });
 
+    // Botão da tabela: troca o gráfico pela tabela e volta
+    btnTabela.addEventListener('click', function () {
+      var abrir = !raiz.classList.contains('vrn-com-tabela');
+      parar();
+      esconderDica();
+      raiz.classList.toggle('vrn-com-tabela', abrir);
+      btnTabela.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+      btnTabela.textContent = abrir ? 'Voltar ao gráfico' : 'Ver os números em tabela';
+      layout();
+      if (!abrir) irPara(atual, false);
+    });
+
     // Dica ao passar o mouse ou tocar
     function mostrarDica(ev) {
       var a = vis[atual].alvo(ev);
@@ -369,7 +392,7 @@
     // no iframe, se a altura do conteúdo mudar por qualquer motivo, reajusta o palco
     if (emIframe && window.ResizeObserver) {
       new ResizeObserver(function () {
-        if (!detalhes.open && Math.abs(raiz.getBoundingClientRect().height - (window.innerHeight - 2)) > 1) layout();
+        if (Math.abs(raiz.getBoundingClientRect().height - (window.innerHeight - 2)) > 1) layout();
       }).observe(raiz);
     }
     var tamanho = palco.clientWidth + 'x' + window.innerHeight;
