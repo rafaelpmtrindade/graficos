@@ -1,7 +1,7 @@
 # Gráficos do Vila Rica News
 
 Gráficos interativos para embutir nas matérias do [Vila Rica News](https://vilaricanews.com.br).
-Cada gráfico fica numa pasta (os novos usam o motor comum em `comum/`) e é publicado pelo GitHub Pages em
+Cada gráfico fica numa pasta e todos usam o motor comum em `comum/` (`vrn.js` + `vrn.css`) e é publicado pelo GitHub Pages em
 `https://rafaelpmtrindade.github.io/graficos/<pasta>/`.
 
 | Pasta | Matéria | Altura do iframe |

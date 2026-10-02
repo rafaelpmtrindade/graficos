@@ -15,6 +15,7 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
   --vrn-vermelho: #ff0032;
   --vrn-verde: #0b8b09;
   --vrn-cinza: #c4c4c4;
+  --vrn-sem: #8a8a8a;
   color-scheme: light;
   box-sizing: border-box;
   max-width: 680px;
@@ -88,10 +89,13 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 .vrn-ponto {
   fill: var(--cor); stroke: var(--cor); stroke-width: 0;
   transform-box: fill-box; transform-origin: center; transform: scale(0);
-  transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;
+  transition: transform .45s cubic-bezier(.34,1.56,.64,1), fill .5s ease, stroke .5s ease, stroke-width .5s ease, opacity .2s ease;
 }
 .vrn-ponto.visivel { transform: scale(1); }
 .vrn-ponto.vazado { fill: var(--vrn-fundo); stroke-width: 2.5px; }
+.vrn-ponto.pulsa { animation: vrn-pulsa 1.4s ease-in-out 2; }
+@keyframes vrn-pulsa { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.35); } }
+.vrn-anel { width: 12px; height: 12px; border-radius: 50%; flex: none; display: inline-block; border: 2px solid var(--vrn-sem); }
 .vrn-apagado { opacity: .25; }
 
 /* Barras (um lado) */
@@ -167,5 +171,5 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
   .vrn-rever span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .vrn-ponto, .vrn-painel, .vrn-legenda, .vrn-camada, .vrn-barra-fill, .vrn-pir-fill, .vrn-barra-valor, .vrn-pir-valor { transition: none !important; }
+  .vrn-ponto, .vrn-painel, .vrn-legenda, .vrn-camada, .vrn-barra-fill, .vrn-pir-fill, .vrn-barra-valor, .vrn-pir-valor { transition: none !important; animation: none !important; }
 }

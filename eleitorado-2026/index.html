@@ -3,495 +3,93 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Eleitorado de Vila Rica</title>
+<title>Perfil do eleitorado de Vila Rica</title>
 <meta name="robots" content="noindex, indexifembedded">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
-<style>
-  html, body { margin: 0; padding: 0; background: #ffffff; }
-</style>
+<link rel="stylesheet" href="../comum/vrn.css">
 </head>
 <body>
-
-<!-- ===== INÍCIO DO GRÁFICO (copie daqui até FIM se o site aceitar HTML com script) ===== -->
-<figure id="vr-eleitorado" class="vre" aria-labelledby="vre-titulo">
-<style>
-  #vr-eleitorado {
-    --vre-fundo: #ffffff;
-    /* Cores do Vila Rica News: preto #171717 e vermelho #ff0032 do logotipo;
-       azul e verde das editorias do site (#302ebd clareado 1 tom para passar no teste de daltonismo; #0b8b09) */
-    --vre-tinta: #171717;
-    --vre-tinta-2: #4d4d4d;
-    --vre-tinta-3: #6e6e6e;
-    --vre-linha: #e5e5e5;
-    --vre-trilho: #f2f2f2;
-    --vre-destaque: #ff0032;
-    --vre-neutro: #171717;
-    --vre-homens: #3b39c9;
-    --vre-mulheres: #ff0032;
-    --vre-bio: #0b8b09;
-    --vre-sem: #8a8a8a;
-    color-scheme: light;
-    box-sizing: border-box;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 14px 16px 20px;
-    border-top: 2px solid var(--vre-tinta);
-    background: var(--vre-fundo);
-    color: var(--vre-tinta);
-    font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif;
-    font-size: 16px;
-    line-height: 1.4;
-    text-align: left;
-  }
-  #vr-eleitorado *, #vr-eleitorado *::before, #vr-eleitorado *::after { box-sizing: inherit; }
-  #vr-eleitorado p, #vr-eleitorado h2 { margin: 0; padding: 0; }
-
-  #vr-eleitorado .vre-chapeu { font-size: 14px; font-weight: 500; letter-spacing: .02em; text-transform: uppercase; color: var(--vre-tinta); margin-bottom: 4px; }
-  #vr-eleitorado .vre-chapeu::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--vre-destaque); vertical-align: 1px; }
-  #vr-eleitorado .vre-titulo { font-size: 24px; font-weight: 900; line-height: 1.15; letter-spacing: -0.01em; }
-  #vr-eleitorado .vre-sub { margin-top: 4px; font-size: 14px; color: var(--vre-tinta-2); }
-
-  /* Abas */
-  #vr-eleitorado .vre-controles { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
-  #vr-eleitorado .vre-abas { display: flex; flex: 1; gap: 4px; padding: 3px; border-radius: 10px; background: var(--vre-trilho); }
-  #vr-eleitorado .vre-aba {
-    position: relative; flex: 1; overflow: hidden;
-    appearance: none; border: 0; margin: 0; border-radius: 7px;
-    padding: 8px 6px; background: transparent; color: var(--vre-tinta-2);
-    font-family: inherit; font-size: 14px; font-weight: 500; line-height: 1.2; cursor: pointer;
-  }
-  #vr-eleitorado .vre-aba:hover { color: var(--vre-tinta); }
-  #vr-eleitorado .vre-aba[aria-pressed="true"] { background: var(--vre-tinta); color: #ffffff; }
-  #vr-eleitorado .vre-aba:focus-visible, #vr-eleitorado .vre-rever:focus-visible, #vr-eleitorado .vre-btn-tabela:focus-visible { outline: 2px solid var(--vre-destaque); outline-offset: 2px; }
-  #vr-eleitorado .vre-progresso { position: absolute; left: 0; bottom: 0; height: 3px; width: 0; background: var(--vre-destaque); }
-  #vr-eleitorado .vre-rever {
-    appearance: none; border: 0; background: none; margin: 0; padding: 8px 2px;
-    color: var(--vre-tinta-2); font-family: inherit; font-size: 14px; font-weight: 500; line-height: 1.2; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-  }
-  #vr-eleitorado .vre-rever:hover { color: var(--vre-tinta); }
-  #vr-eleitorado .vre-rever svg { width: 14px; height: 14px; }
-
-  /* Números — os três painéis ocupam a mesma célula para a altura não pular */
-  #vr-eleitorado .vre-paineis { display: grid; margin-top: 20px; min-height: 112px; }
-  #vr-eleitorado .vre-painel { grid-area: 1 / 1; opacity: 0; visibility: hidden; transform: translateY(6px); transition: opacity .35s ease, transform .35s ease, visibility 0s .35s; }
-  #vr-eleitorado .vre-painel.ativo { opacity: 1; visibility: visible; transform: none; transition: opacity .45s ease .1s, transform .45s ease .1s, visibility 0s; }
-  #vr-eleitorado .vre-num { font-size: 56px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; }
-  #vr-eleitorado .vre-num-m { font-size: 44px; }
-  #vr-eleitorado .vre-rotulo { margin-top: 6px; font-size: 15px; color: var(--vre-tinta-2); }
-  #vr-eleitorado .vre-rotulo strong { color: var(--vre-tinta); font-weight: 500; }
-  #vr-eleitorado .vre-dupla { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  #vr-eleitorado .vre-chave { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; color: var(--vre-tinta); margin-bottom: 6px; }
-  #vr-eleitorado .vre-bolinha { width: 12px; height: 12px; border-radius: 50%; flex: none; }
-  #vr-eleitorado .vre-anel { width: 12px; height: 12px; border-radius: 50%; flex: none; border: 2px solid var(--vre-sem); }
-  #vr-eleitorado .vre-extra { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 14px; color: var(--vre-tinta-2); }
-
-  /* Pontos */
-  #vr-eleitorado .vre-grade { position: relative; margin-top: 18px; }
-  #vr-eleitorado .vre-grade svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
-  #vr-eleitorado .vre-ponto {
-    fill: var(--vre-neutro); stroke: var(--vre-neutro); stroke-width: 0;
-    transform-box: fill-box; transform-origin: center; transform: scale(0); opacity: 1;
-    transition: transform .45s cubic-bezier(.34,1.56,.64,1), fill .5s ease, stroke .5s ease, stroke-width .5s ease, opacity .2s ease;
-  }
-  #vr-eleitorado .vre-ponto.visivel { transform: scale(1); }
-  #vr-eleitorado .vre-ponto.homem { fill: var(--vre-homens); stroke: var(--vre-homens); }
-  #vr-eleitorado .vre-ponto.mulher { fill: var(--vre-mulheres); stroke: var(--vre-mulheres); }
-  #vr-eleitorado .vre-ponto.bio { fill: var(--vre-bio); stroke: var(--vre-bio); }
-  #vr-eleitorado .vre-ponto.sembio { fill: var(--vre-fundo); stroke: var(--vre-sem); stroke-width: 2.5px; }
-  #vr-eleitorado .vre-ponto.apagado { opacity: .25; }
-  #vr-eleitorado .vre-ponto.pulsa { animation: vre-pulsa 1.4s ease-in-out 2; }
-  @keyframes vre-pulsa { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.35); } }
-
-  #vr-eleitorado .vre-legenda-grade { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: var(--vre-tinta-3); }
-  #vr-eleitorado .vre-legenda-grade .vre-bolinha { width: 9px; height: 9px; background: var(--vre-neutro); }
-
-  /* Dica ao passar o mouse */
-  #vr-eleitorado .vre-dica {
-    position: absolute; z-index: 2; pointer-events: none; opacity: 0;
-    padding: 8px 10px; border-radius: 6px; background: var(--vre-tinta); color: #ffffff;
-    font-size: 13px; line-height: 1.35; white-space: nowrap;
-    transform: translate(-50%, calc(-100% - 12px)); transition: opacity .12s ease;
-  }
-  #vr-eleitorado .vre-dica.on { opacity: 1; }
-  #vr-eleitorado .vre-dica strong { font-weight: 500; }
-
-  /* Rodapé e tabela */
-  /* Dentro de iframe a matéria já dá as margens: o gráfico usa a coluna toda */
-  #vr-eleitorado.vre-iframe { max-width: none; margin: 0; padding: 14px 2px 20px; }
-  /* ...e ocupa a altura toda; a sobra vira respiro em vez de faixa branca no fim */
-  #vr-eleitorado.vre-encher { min-height: 100vh; display: flex; flex-direction: column; }
-  #vr-eleitorado.vre-encher .vre-grade { margin-top: auto; padding-top: 18px; }
-  #vr-eleitorado.vre-encher figcaption { margin-top: auto; }
-  #vr-eleitorado.vre-encher .vre-legenda-grade { margin-bottom: 16px; }
-  #vr-eleitorado figcaption { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--vre-linha); font-size: 12.5px; color: var(--vre-tinta-3); }
-  /* Botão da tabela e assinatura na mesma linha */
-  #vr-eleitorado .vre-acoes { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px 12px; margin-top: 12px; }
-  #vr-eleitorado .vre-btn-tabela {
-    appearance: none; margin: 0; min-height: 40px; padding: 9px 16px; border: 1px solid var(--vre-tinta); border-radius: 6px;
-    background: var(--vre-fundo); color: var(--vre-tinta); font-family: inherit; font-size: 14px; font-weight: 500; line-height: 1.2; cursor: pointer;
-  }
-  #vr-eleitorado .vre-btn-tabela:hover { background: var(--vre-tinta); color: #ffffff; }
-  #vr-eleitorado .vre-logo { display: block; flex: none; width: 126px; height: auto; }
-  /* A tabela aparece no lugar do gráfico (o iframe tem altura fixa) */
-  #vr-eleitorado .vre-tabela { display: none; margin-top: 16px; }
-  #vr-eleitorado.vre-com-tabela .vre-tabela { display: block; }
-  #vr-eleitorado.vre-com-tabela .vre-controles, #vr-eleitorado.vre-com-tabela .vre-paineis,
-  #vr-eleitorado.vre-com-tabela .vre-grade, #vr-eleitorado.vre-com-tabela .vre-legenda-grade { display: none; }
-  #vr-eleitorado.vre-encher.vre-com-tabela { height: 100vh; }
-  #vr-eleitorado.vre-encher .vre-tabela { flex: 1 1 auto; min-height: 0; overflow: auto; }
-  #vr-eleitorado table { width: 100%; margin: 0; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-  #vr-eleitorado th, #vr-eleitorado td { padding: 7px 4px; border-bottom: 1px solid var(--vre-linha); text-align: right; font-weight: 400; }
-  #vr-eleitorado th:first-child, #vr-eleitorado td:first-child { text-align: left; }
-  #vr-eleitorado thead th { font-size: 12.5px; font-weight: 500; color: var(--vre-tinta-3); }
-  #vr-eleitorado tbody th { color: var(--vre-tinta); }
-  #vr-eleitorado tr.vre-grupo th { padding-top: 12px; font-weight: 500; color: var(--vre-tinta-2); border-bottom: 0; }
-
-  @media (max-width: 420px) {
-    #vr-eleitorado .vre-titulo { font-size: 21px; }
-    #vr-eleitorado .vre-num { font-size: 48px; }
-    #vr-eleitorado .vre-num-m { font-size: 36px; }
-    #vr-eleitorado .vre-controles { gap: 8px; }
-    #vr-eleitorado .vre-logo { width: 100px; }
-  }
-  @media (max-width: 360px) {
-    #vr-eleitorado .vre-aba { font-size: 13px; padding: 8px 4px; }
-    #vr-eleitorado .vre-rever span { display: none; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    #vr-eleitorado .vre-ponto, #vr-eleitorado .vre-painel { transition: none !important; animation: none !important; }
-  }
-</style>
-
-  <p class="vre-chapeu">Eleições 2026</p>
-  <p class="vre-titulo" id="vre-titulo">O eleitorado de Vila Rica em pontos</p>
-  <p class="vre-sub">Tamanho, divisão por gênero e biometria, segundo o cadastro do TSE para 2026</p>
-
-  <div class="vre-controles">
-    <div class="vre-abas" role="group" aria-label="Escolha o recorte">
-      <button type="button" class="vre-aba" data-passo="0" aria-pressed="true">Total<span class="vre-progresso"></span></button>
-      <button type="button" class="vre-aba" data-passo="1" aria-pressed="false">Gênero<span class="vre-progresso"></span></button>
-      <button type="button" class="vre-aba" data-passo="2" aria-pressed="false">Biometria<span class="vre-progresso"></span></button>
-    </div>
-    <button type="button" class="vre-rever" aria-label="Rever a animação desde o início">
-      <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8a5.5 5.5 0 1 0 1.7-4"/><path d="M2.5 2.5v3h3"/></svg>
-      <span>Rever</span>
-    </button>
-  </div>
-
-  <div class="vre-paineis">
-    <div class="vre-painel ativo" data-painel="0">
-      <p class="vre-chave"><span class="vre-bolinha" style="background: var(--vre-neutro)"></span>Total de eleitores</p>
-      <p class="vre-num" data-conta="13883">13.883</p>
-      <p class="vre-rotulo">registrados para 2026</p>
-      <p class="vre-extra">16ª Zona Eleitoral · 51 seções eleitorais</p>
-    </div>
-    <div class="vre-painel" data-painel="1">
-      <div class="vre-dupla">
-        <div>
-          <p class="vre-chave"><span class="vre-bolinha" style="background: var(--vre-homens)"></span>Homens</p>
-          <p class="vre-num vre-num-m" data-conta="51.3" data-casas="1" data-sufixo="%">51,3%</p>
-          <p class="vre-rotulo"><strong>7.116</strong> eleitores</p>
-        </div>
-        <div>
-          <p class="vre-chave"><span class="vre-bolinha" style="background: var(--vre-mulheres)"></span>Mulheres</p>
-          <p class="vre-num vre-num-m" data-conta="48.7" data-casas="1" data-sufixo="%">48,7%</p>
-          <p class="vre-rotulo"><strong>6.767</strong> eleitoras</p>
-        </div>
-      </div>
-      <p class="vre-extra">349 homens a mais no cadastro</p>
-    </div>
-    <div class="vre-painel" data-painel="2">
-      <p class="vre-chave"><span class="vre-bolinha" style="background: var(--vre-bio)"></span>Com biometria</p>
-      <p class="vre-num" data-conta="96.6" data-casas="1" data-sufixo="%">96,6%</p>
-      <p class="vre-rotulo"><strong>13.405</strong> eleitores com biometria registrada</p>
-      <p class="vre-extra"><span class="vre-anel"></span>478 sem registro de biometria no arquivo</p>
-    </div>
-  </div>
-
-  <div class="vre-grade">
-    <svg aria-hidden="true" focusable="false"></svg>
-    <div class="vre-dica" role="presentation"></div>
-  </div>
-  <p class="vre-legenda-grade"><span class="vre-bolinha"></span>Cada ponto representa cerca de 100 eleitores</p>
-
-  <div class="vre-tabela" id="vre-tabela">
-      <table>
-        <thead><tr><th scope="col">Recorte</th><th scope="col">Eleitores</th><th scope="col">%</th></tr></thead>
-        <tbody>
-          <tr><th scope="row">Total</th><td>13.883</td><td>100,0</td></tr>
-          <tr class="vre-grupo"><th scope="rowgroup" colspan="3">Gênero</th></tr>
-          <tr><th scope="row">Homens</th><td>7.116</td><td>51,3</td></tr>
-          <tr><th scope="row">Mulheres</th><td>6.767</td><td>48,7</td></tr>
-          <tr class="vre-grupo"><th scope="rowgroup" colspan="3">Biometria</th></tr>
-          <tr><th scope="row">Com registro</th><td>13.405</td><td>96,6</td></tr>
-          <tr><th scope="row">Sem registro</th><td>478</td><td>3,4</td></tr>
-        </tbody>
-      </table>
-  </div>
-
-  <figcaption>
-    <p>Fonte: TSE, Perfil do Eleitorado por Seção (2026). Gênero conforme informado no cadastro eleitoral. Os pontos são arredondados; os números exatos estão acima e na tabela.</p>
-    <div class="vre-acoes">
-      <button type="button" class="vre-btn-tabela" aria-expanded="false" aria-controls="vre-tabela">Ver os números em tabela</button>
-      <img class="vre-logo" width="126" height="14" alt="Vila Rica News" src="data:image/png;base64,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">
-    </div>
-  </figcaption>
-
+<figure id="vrn"></figure>
+<script src="../comum/vrn.js"></script>
 <script>
 (function () {
-  var raiz = document.getElementById('vr-eleitorado');
-  if (!raiz) return;
+  var n = VRN.n, pct = VRN.pct;
 
-  // Dados oficiais (TSE). 1 ponto = 100 eleitores: 139 pontos;
-  // 71 homens + 68 mulheres = 139; 134 com biometria + 5 sem = 139.
-  var D = { total: 13883, homens: 7116, mulheres: 6767, bio: 13405, semBio: 478 };
-  var POR_PONTO = 100;
-  var N = Math.round(D.total / POR_PONTO);
-  var N_HOMENS = Math.round(D.homens / POR_PONTO);
-  var N_SEM_BIO = Math.round(D.semBio / POR_PONTO);
-  var DURACAO_PASSO = 5200;
+  // TSE, Perfil do Eleitorado por Seção 2026 (MT), Vila Rica (código 98990), 16ª Zona
+  var D = { total: 13883, homens: 7116, mulheres: 6767, bio: 13405, zona: 16, secoes: 51 };
+  D.semBio = D.total - D.bio;
 
-  var fmt = new Intl.NumberFormat('pt-BR');
-  function pct(v) { return (v * 100).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%'; }
-  var GRUPOS = {
-    total:   { nome: 'Eleitorado de Vila Rica', valor: D.total },
-    homem:   { nome: 'Homens', valor: D.homens },
-    mulher:  { nome: 'Mulheres', valor: D.mulheres },
-    bio:     { nome: 'Com biometria', valor: D.bio },
-    sembio:  { nome: 'Sem registro de biometria', valor: D.semBio }
-  };
+  // 1 ponto = 100 eleitores (arredondado); os grupos de cada aba somam o mesmo total de pontos
+  var N = Math.round(D.total / 100);
+  var P_HOMENS = Math.round(D.homens / 100), P_BIO = Math.round(D.bio / 100);
+  function dica(nome, v) { return '<strong>' + nome + '</strong><br>' + n(v) + ' eleitores · ' + pct(v / D.total); }
+  function bolinha(cor) { return '<span class="vrn-bolinha" style="background:var(--vrn-' + cor + ')"></span>'; }
+  var LEGENDA = bolinha('tinta') + 'Cada ponto representa cerca de 100 eleitores';
+  function casa1(v) { return Math.round(v * 1000) / 10; }
 
-  var reduzido = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var svg = raiz.querySelector('.vre-grade svg');
-  var dica = raiz.querySelector('.vre-dica');
-  var abas = raiz.querySelectorAll('.vre-aba');
-  var paineis = raiz.querySelectorAll('.vre-painel');
-  var NS = 'http://www.w3.org/2000/svg';
-  var PASSO_GRADE = 24, RAIO = 8;
-  var colunas = 20, linhas = 7;
-  var pontos = [];
-  var passoAtual = 0;
-
-  for (var i = 0; i < N; i++) {
-    var c = document.createElementNS(NS, 'circle');
-    c.setAttribute('class', 'vre-ponto');
-    c.setAttribute('r', RAIO);
-    svg.appendChild(c);
-    pontos.push(c);
-  }
-
-  // Ordem por coluna: homens enchem a esquerda, mulheres a direita,
-  // e os sem biometria ficam juntos no fim.
-  // Quantas colunas: as menos possíveis (pontos maiores) que ainda cabem na altura.
-  // No iframe, a altura é a do próprio iframe; solto na página, até 60% da largura.
-  var COLUNAS_POSSIVEIS = [12, 14, 16, 18, 20, 24, 28, 35];
-  var CELULA_MAX = 40, CELULA_MIN = 12;
-  var emIframe = window.self !== window.top;
-  function escolherColunas() {
-    var largura = svg.parentNode.clientWidth;
-    var disponivel = Math.max(160, largura * 0.6);
-    if (emIframe) {
-      raiz.classList.remove('vre-encher');
-      var resto = raiz.getBoundingClientRect().height - svg.getBoundingClientRect().height;
-      raiz.classList.add('vre-encher');
-      disponivel = window.innerHeight - resto - 2;
-    }
-    var escolha = COLUNAS_POSSIVEIS[COLUNAS_POSSIVEIS.length - 1];
-    for (var k = 0; k < COLUNAS_POSSIVEIS.length; k++) {
-      var c = COLUNAS_POSSIVEIS[k], celula = largura / c;
-      if (celula > CELULA_MAX) continue;
-      if (celula < CELULA_MIN) break;
-      escolha = c;
-      if (Math.ceil(N / c) * celula <= disponivel) break;
-    }
-    return escolha;
-  }
-
-  function posicionar() {
-    if (raiz.classList.contains('vre-com-tabela')) return;
-    colunas = escolherColunas();
-    linhas = Math.ceil(N / colunas);
-    svg.setAttribute('viewBox', '0 0 ' + (colunas * PASSO_GRADE) + ' ' + (linhas * PASSO_GRADE));
-    pontos.forEach(function (p, i) {
-      var col = Math.floor(i / linhas), lin = i % linhas;
-      // a última coluna (incompleta) encosta embaixo: os sem biometria ficam juntos no canto
-      if (col === colunas - 1) lin += colunas * linhas - N;
-      p.setAttribute('cx', col * PASSO_GRADE + PASSO_GRADE / 2);
-      p.setAttribute('cy', lin * PASSO_GRADE + PASSO_GRADE / 2);
-      p.dataset.col = col;
-    });
-  }
-
-  function grupoDoPonto(i, passo) {
-    if (passo === 1) return i < N_HOMENS ? 'homem' : 'mulher';
-    if (passo === 2) return i >= N - N_SEM_BIO ? 'sembio' : 'bio';
-    return 'total';
-  }
-
-  function contar(el, animar) {
-    var alvo = parseFloat(el.dataset.conta);
-    var casas = parseInt(el.dataset.casas || '0', 10);
-    var sufixo = el.dataset.sufixo || '';
-    var opcoes = { minimumFractionDigits: casas, maximumFractionDigits: casas };
-    if (!animar || reduzido) { el.textContent = alvo.toLocaleString('pt-BR', opcoes) + sufixo; return; }
-    var inicio = null, dur = 1100;
-    function quadro(t) {
-      if (!inicio) inicio = t;
-      var k = Math.min(1, (t - inicio) / dur);
-      var e = 1 - Math.pow(1 - k, 3);
-      var v = alvo * e;
-      v = casas ? Math.round(v * 10) / 10 : Math.round(v);
-      el.textContent = v.toLocaleString('pt-BR', opcoes) + sufixo;
-      if (k < 1) requestAnimationFrame(quadro);
-    }
-    requestAnimationFrame(quadro);
-  }
-
-  function irPara(passo, animar) {
-    passoAtual = passo;
-    abas.forEach(function (a, i) { a.setAttribute('aria-pressed', i === passo ? 'true' : 'false'); });
-    paineis.forEach(function (p, i) {
-      var ativo = i === passo;
-      p.classList.toggle('ativo', ativo);
-      if (ativo) p.querySelectorAll('[data-conta]').forEach(function (el) { contar(el, animar); });
-    });
-    pontos.forEach(function (p, i) {
-      var g = grupoDoPonto(i, passo);
-      var atraso = animar && !reduzido ? (+p.dataset.col * 28 + (i % linhas) * 6) : 0;
-      p.style.transitionDelay = atraso + 'ms';
-      p.classList.add('visivel');
-      p.classList.remove('homem', 'mulher', 'bio', 'sembio', 'pulsa', 'apagado');
-      if (g !== 'total') p.classList.add(g);
-    });
-    if (passo === 2 && animar && !reduzido) {
-      setTimeout(function () {
-        pontos.slice(N - N_SEM_BIO).forEach(function (p) { p.style.transitionDelay = '0ms'; p.classList.add('pulsa'); });
-      }, 900);
-    }
-  }
-
-  function esconderPontos() {
-    pontos.forEach(function (p) { p.style.transitionDelay = '0ms'; p.classList.remove('visivel'); });
-  }
-
-  // Reprodução automática: uma vez, ao aparecer na tela; para no último passo
-  var timer = null, rodando = false;
-  function zerarProgresso() {
-    raiz.querySelectorAll('.vre-progresso').forEach(function (b) { b.style.transition = 'none'; b.style.width = '0'; });
-  }
-  function progresso(passo) {
-    zerarProgresso();
-    var barra = abas[passo].querySelector('.vre-progresso');
-    void barra.offsetWidth;
-    barra.style.transition = 'width ' + DURACAO_PASSO + 'ms linear';
-    barra.style.width = '100%';
-  }
-  function parar() { rodando = false; clearTimeout(timer); zerarProgresso(); }
-  function tocar() {
-    parar();
-    rodando = true;
-    esconderPontos();
-    var passo = 0;
-    function proximo() {
-      if (!rodando) return;
-      irPara(passo, true);
-      if (passo < abas.length - 1) {
-        progresso(passo);
-        timer = setTimeout(function () { passo++; proximo(); }, DURACAO_PASSO);
-      } else {
-        rodando = false;
-        zerarProgresso();
+  VRN.grafico({
+    id: 'eleitorado-2026',
+    chapeu: 'Eleições 2026',
+    titulo: 'Perfil do eleitorado',
+    subtitulo: 'Vila Rica, cadastro do TSE para 2026',
+    passos: [
+      {
+        aba: 'Total',
+        painel:
+          '<p class="vrn-chave">' + bolinha('tinta') + 'Total de eleitores</p>' +
+          '<p class="vrn-num" data-conta="' + D.total + '">' + n(D.total) + '</p>' +
+          '<p class="vrn-rotulo">registrados para 2026</p>' +
+          '<p class="vrn-extra">' + D.zona + 'ª Zona Eleitoral · ' + D.secoes + ' seções eleitorais</p>',
+        legenda: LEGENDA,
+        vis: { tipo: 'pontos', compartilhar: 'eleitorado', colunas: [12, 14, 16, 18, 20, 24, 28, 35],
+          grupos: [{ pontos: N, cor: 'var(--vrn-tinta)', dica: dica('Eleitorado de Vila Rica', D.total) }] }
+      },
+      {
+        aba: 'Gênero',
+        painel:
+          '<div class="vrn-dupla"><div>' +
+            '<p class="vrn-chave">' + bolinha('azul') + 'Homens</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + casa1(D.homens / D.total) + '" data-casas="1" data-sufixo="%">' + pct(D.homens / D.total) + '</p>' +
+            '<p class="vrn-rotulo"><strong>' + n(D.homens) + '</strong> eleitores</p></div><div>' +
+            '<p class="vrn-chave">' + bolinha('vermelho') + 'Mulheres</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + casa1(D.mulheres / D.total) + '" data-casas="1" data-sufixo="%">' + pct(D.mulheres / D.total) + '</p>' +
+            '<p class="vrn-rotulo"><strong>' + n(D.mulheres) + '</strong> eleitoras</p></div></div>' +
+          '<p class="vrn-extra">' + n(D.homens - D.mulheres) + ' homens a mais no cadastro</p>',
+        legenda: LEGENDA,
+        vis: { tipo: 'pontos', compartilhar: 'eleitorado',
+          grupos: [
+            { pontos: P_HOMENS, cor: 'var(--vrn-azul)', dica: dica('Homens', D.homens) },
+            { pontos: N - P_HOMENS, cor: 'var(--vrn-vermelho)', dica: dica('Mulheres', D.mulheres) }
+          ] }
+      },
+      {
+        aba: 'Biometria',
+        painel:
+          '<p class="vrn-chave">' + bolinha('verde') + 'Com biometria</p>' +
+          '<p class="vrn-num" data-conta="' + casa1(D.bio / D.total) + '" data-casas="1" data-sufixo="%">' + pct(D.bio / D.total) + '</p>' +
+          '<p class="vrn-rotulo"><strong>' + n(D.bio) + '</strong> eleitores com biometria registrada</p>' +
+          '<p class="vrn-extra"><span class="vrn-anel"></span>' + n(D.semBio) + ' sem registro de biometria no arquivo</p>',
+        legenda: LEGENDA,
+        vis: { tipo: 'pontos', compartilhar: 'eleitorado',
+          grupos: [
+            { pontos: P_BIO, cor: 'var(--vrn-verde)', dica: dica('Com biometria', D.bio) },
+            { pontos: N - P_BIO, cor: 'var(--vrn-sem)', vazado: true, pulsar: true, dica: dica('Sem registro de biometria', D.semBio) }
+          ] }
       }
+    ],
+    fonte: 'Fonte: TSE, Perfil do Eleitorado por Seção 2026. Gênero conforme informado no cadastro eleitoral.',
+    tabela: {
+      colunas: ['Recorte', 'Eleitores', '%'],
+      grupos: [
+        { linhas: [['Total', n(D.total), '100,0']] },
+        { titulo: 'Gênero', linhas: [['Homens', n(D.homens), pct(D.homens / D.total).replace('%', '')], ['Mulheres', n(D.mulheres), pct(D.mulheres / D.total).replace('%', '')]] },
+        { titulo: 'Biometria', linhas: [['Com registro', n(D.bio), pct(D.bio / D.total).replace('%', '')], ['Sem registro', n(D.semBio), pct(D.semBio / D.total).replace('%', '')]] }
+      ]
     }
-    // pequeno respiro para os pontos sumirem antes de reaparecer
-    timer = setTimeout(proximo, 120);
-  }
-
-  abas.forEach(function (a) {
-    a.addEventListener('click', function () { parar(); irPara(+a.dataset.passo, true); });
   });
-  raiz.querySelector('.vre-rever').addEventListener('click', function () { reduzido ? irPara(0, false) : tocar(); });
-
-  // Botão da tabela: troca o gráfico pela tabela e volta
-  var btnTabela = raiz.querySelector('.vre-btn-tabela');
-  btnTabela.addEventListener('click', function () {
-    var abrir = !raiz.classList.contains('vre-com-tabela');
-    parar();
-    esconderDica();
-    raiz.classList.toggle('vre-com-tabela', abrir);
-    btnTabela.setAttribute('aria-expanded', abrir ? 'true' : 'false');
-    btnTabela.textContent = abrir ? 'Voltar ao gráfico' : 'Ver os números em tabela';
-    if (!abrir) { posicionar(); irPara(passoAtual, false); }
-  });
-
-  // Dica: acha a célula mais próxima do ponteiro (cobre os vãos entre pontos)
-  function mostrarDica(ev) {
-    var r = svg.getBoundingClientRect();
-    var escala = r.width / (colunas * PASSO_GRADE);
-    var col = Math.floor((ev.clientX - r.left) / (PASSO_GRADE * escala));
-    var lin = Math.floor((ev.clientY - r.top) / (PASSO_GRADE * escala));
-    var vazios = colunas * linhas - N;
-    var i = col * linhas + (col === colunas - 1 ? lin - vazios : lin);
-    if (col < 0 || col >= colunas || lin < 0 || lin >= linhas || (col === colunas - 1 && lin < vazios) || i >= N) { esconderDica(); return; }
-    var g = grupoDoPonto(i, passoAtual);
-    var info = GRUPOS[g];
-    dica.innerHTML = '<strong>' + info.nome + '</strong><br>' + fmt.format(info.valor) + ' eleitores · ' + pct(info.valor / D.total);
-    var base = raiz.querySelector('.vre-grade').getBoundingClientRect();
-    var cx = (col + 0.5) * PASSO_GRADE * escala + (r.left - base.left);
-    var cy = lin * PASSO_GRADE * escala + (r.top - base.top);
-    var meia = dica.offsetWidth / 2;
-    cx = Math.max(meia, Math.min(base.width - meia, cx));
-    dica.style.left = cx + 'px';
-    dica.style.top = cy + 'px';
-    dica.classList.add('on');
-    if (passoAtual > 0) {
-      pontos.forEach(function (p, k) { p.style.transitionDelay = '0ms'; p.classList.toggle('apagado', grupoDoPonto(k, passoAtual) !== g); });
-    }
-  }
-  function esconderDica() {
-    dica.classList.remove('on');
-    pontos.forEach(function (p) { p.classList.remove('apagado'); });
-  }
-  svg.addEventListener('pointermove', mostrarDica);
-  svg.addEventListener('pointerdown', mostrarDica);
-  // No toque, a dica fica até o próximo toque fora dos pontos
-  svg.addEventListener('pointerleave', function (ev) { if (ev.pointerType !== 'touch') esconderDica(); });
-  document.addEventListener('pointerdown', function (ev) { if (!svg.contains(ev.target)) esconderDica(); });
-
-  if (emIframe) raiz.classList.add('vre-iframe', 'vre-encher');
-  posicionar();
-  // a fonte da marca muda a altura dos textos quando termina de carregar
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(posicionar);
-  var tamanhoAnterior = raiz.clientWidth + 'x' + window.innerHeight;
-  window.addEventListener('resize', function () {
-    var tamanho = raiz.clientWidth + 'x' + window.innerHeight;
-    if (tamanho === tamanhoAnterior) return;
-    tamanhoAnterior = tamanho;
-    posicionar();
-  });
-
-  // Quando embutido por iframe, avisa a página da altura certa
-  function avisarAltura() {
-    if (window.parent === window) return;
-    window.parent.postMessage({ tipo: 'vr-eleitorado-altura', altura: Math.ceil(document.documentElement.scrollHeight) }, '*');
-  }
-  if (window.ResizeObserver) new ResizeObserver(avisarAltura).observe(raiz); else window.addEventListener('load', avisarAltura);
-
-  if (reduzido || !('IntersectionObserver' in window)) {
-    irPara(0, false);
-  } else {
-    var obs = new IntersectionObserver(function (entradas) {
-      if (entradas[0].isIntersecting) { obs.disconnect(); tocar(); }
-    }, { threshold: 0.45 });
-    obs.observe(raiz);
-  }
 })();
 </script>
-</figure>
-<!-- ===== FIM DO GRÁFICO ===== -->
-
 </body>
 </html>

@@ -17,24 +17,40 @@
   function soma(lista, campo) { return lista.reduce(function (s, x) { return s + (campo ? x[campo] : x); }, 0); }
 
   // ---------- Pontos: N pontos em grade, um grupo depois do outro, por coluna ----------
+  // v.estados: abas que compartilham os mesmos pontos (eles mudam de cor de uma aba para outra)
   function Pontos(camada, v, reduzido) {
-    var N = soma(v.grupos, 'pontos');
+    var estados = v.estados || [v.grupos];
+    var N = soma(estados[0], 'pontos');
     var svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('aria-hidden', 'true');
     svg.setAttribute('focusable', 'false');
     camada.appendChild(svg);
-    var pts = [], grupoDe = [];
-    v.grupos.forEach(function (g) {
-      for (var k = 0; k < g.pontos; k++) {
-        var c = document.createElementNS(NS, 'circle');
-        c.setAttribute('r', 8);
-        c.setAttribute('class', 'vrn-ponto' + (g.vazado ? ' vazado' : ''));
-        c.style.setProperty('--cor', g.cor);
-        svg.appendChild(c);
-        pts.push(c);
-        grupoDe.push(g);
-      }
-    });
+    var pts = [], grupoDe = [], estado = -1, pulso = null;
+    for (var k = 0; k < N; k++) {
+      var c = document.createElementNS(NS, 'circle');
+      c.setAttribute('r', 8);
+      c.setAttribute('class', 'vrn-ponto');
+      svg.appendChild(c);
+      pts.push(c);
+    }
+    function aplicarEstado(e, animar) {
+      grupoDe = [];
+      estados[e].forEach(function (g) { for (var j = 0; j < g.pontos; j++) grupoDe.push(g); });
+      clearTimeout(pulso);
+      pts.forEach(function (p, i) {
+        p.style.transitionDelay = animar && !reduzido ? (+p.dataset.col * 28 + +p.dataset.lin * 6) + 'ms' : '0ms';
+        p.style.setProperty('--cor', grupoDe[i].cor);
+        p.classList.toggle('vazado', !!grupoDe[i].vazado);
+        p.classList.remove('pulsa');
+      });
+      estado = e;
+      // grupos marcados com "pulsar" pulsam depois de mudar de cor
+      var pulsam = pts.filter(function (p, i) { return grupoDe[i].pulsar; });
+      if (pulsam.length && !reduzido) pulso = setTimeout(function () {
+        pulsam.forEach(function (p) { p.style.transitionDelay = '0ms'; p.classList.add('pulsa'); });
+      }, animar ? 900 : 300);
+    }
+    aplicarEstado(0, false);
     var col = 10, lin = 10;
     function vazios() { return col * lin - N; }
 
@@ -60,14 +76,21 @@
           p.dataset.lin = ll;
         });
       },
-      entrar: function (animar) {
+      entrar: function (animar, e) {
+        e = e || 0;
+        if (pts[0].classList.contains('visivel')) {
+          if (e !== estado) aplicarEstado(e, animar); // já na tela: só muda as cores
+          return;
+        }
+        aplicarEstado(e, false);
         pts.forEach(function (p) {
           p.style.transitionDelay = animar && !reduzido ? (+p.dataset.col * 30 + +p.dataset.lin * 8) + 'ms' : '0ms';
           p.classList.add('visivel');
         });
       },
       sair: function () {
-        pts.forEach(function (p) { p.style.transitionDelay = '0ms'; p.classList.remove('visivel'); });
+        clearTimeout(pulso);
+        pts.forEach(function (p) { p.style.transitionDelay = '0ms'; p.classList.remove('visivel', 'pulsa'); });
       },
       alvo: function (ev) {
         var r = svg.getBoundingClientRect();
@@ -228,6 +251,19 @@
     if (emIframe) raiz.classList.add('vrn-iframe');
     raiz.setAttribute('aria-labelledby', 'vrn-titulo');
 
+    // Abas com o mesmo vis.compartilhar usam os mesmos pontos, que só mudam de cor
+    var juntos = {}, defs = [];
+    var mapa = cfg.passos.map(function (p) {
+      var chave = p.vis.compartilhar;
+      if (chave) {
+        if (!juntos[chave]) { juntos[chave] = { camada: defs.length, def: { tipo: 'pontos', colunas: p.vis.colunas, estados: [] } }; defs.push(juntos[chave].def); }
+        juntos[chave].def.estados.push(p.vis.grupos);
+        return { camada: juntos[chave].camada, estado: juntos[chave].def.estados.length - 1 };
+      }
+      defs.push(p.vis);
+      return { camada: defs.length - 1, estado: 0 };
+    });
+
     var h = '<p class="vrn-chapeu">' + cfg.chapeu + '</p><p class="vrn-titulo" id="vrn-titulo">' + cfg.titulo + '</p>';
     if (cfg.subtitulo) h += '<p class="vrn-sub">' + cfg.subtitulo + '</p>';
     h += '<div class="vrn-controles"><div class="vrn-abas" role="group" aria-label="Escolha o recorte">';
@@ -239,7 +275,7 @@
       '<span>Rever</span></button></div>';
     h += '<div class="vrn-paineis">' + cfg.passos.map(function (p, i) { return '<div class="vrn-painel' + (i ? '' : ' ativo') + '">' + p.painel + '</div>'; }).join('') + '</div>';
     h += '<div class="vrn-palco"><div class="vrn-dica" role="presentation"></div>' +
-      cfg.passos.map(function (p, i) { return '<div class="vrn-camada' + (i ? '' : ' ativa') + '" aria-hidden="true"></div>'; }).join('') + '</div>';
+      defs.map(function (d, i) { return '<div class="vrn-camada' + (i ? '' : ' ativa') + '" aria-hidden="true"></div>'; }).join('') + '</div>';
     h += '<div class="vrn-legendas">' + cfg.passos.map(function (p, i) { return '<p class="vrn-legenda' + (i ? '' : ' ativo') + '">' + (p.legenda || '') + '</p>'; }).join('') + '</div>';
     h += '<div class="vrn-tabela" id="vrn-tabela">' + tabelaHtml(cfg.tabela) + '</div>';
     h += '<figcaption><p>' + cfg.fonte + '</p><div class="vrn-acoes">' +
@@ -255,7 +291,7 @@
     var dica = raiz.querySelector('.vrn-dica');
     var caixaTabela = raiz.querySelector('.vrn-tabela');
     var btnTabela = raiz.querySelector('.vrn-btn-tabela');
-    var vis = cfg.passos.map(function (p, i) { return TIPOS[p.vis.tipo](camadas[i], p.vis, reduzido); });
+    var vis = defs.map(function (d, i) { return TIPOS[d.tipo](camadas[i], d, reduzido); });
     var atual = 0;
 
     // Altura do palco: no iframe, o que sobra da altura do iframe; solto na página, proporcional à largura
@@ -308,10 +344,11 @@
         if (k === i) p.querySelectorAll('[data-conta]').forEach(function (e) { contar(e, animar); });
       });
       legendas.forEach(function (l, k) { l.classList.toggle('ativo', k === i); });
-      camadas.forEach(function (c, k) { c.classList.toggle('ativa', k === i); });
+      var alvo = mapa[i];
+      camadas.forEach(function (c, k) { c.classList.toggle('ativa', k === alvo.camada); });
       vis.forEach(function (v, k) {
         clearTimeout(saidas[k]);
-        if (k === i) v.entrar(animar);
+        if (k === alvo.camada) v.entrar(animar, alvo.estado);
         else saidas[k] = setTimeout(v.sair, 320); // some depois do esmaecer, para animar de novo na volta
       });
     }
@@ -364,7 +401,7 @@
 
     // Dica ao passar o mouse ou tocar
     function mostrarDica(ev) {
-      var a = vis[atual].alvo(ev);
+      var v = vis[mapa[atual].camada], a = v.alvo(ev);
       if (!a) { esconderDica(); return; }
       dica.innerHTML = a.html;
       dica.classList.add('on');
@@ -372,7 +409,7 @@
       var meia = dica.offsetWidth / 2;
       dica.style.left = Math.max(meia, Math.min(rp.width - meia, a.x - rp.left)) + 'px';
       dica.style.top = (a.y - rp.top) + 'px';
-      vis[atual].destacar(a.chave);
+      v.destacar(a.chave);
     }
     function esconderDica() {
       dica.classList.remove('on');
