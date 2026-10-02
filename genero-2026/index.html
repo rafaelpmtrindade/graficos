@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gênero do eleitorado de Vila Rica</title>
+<meta name="robots" content="noindex, indexifembedded">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../comum/vrn.css">
+</head>
+<body>
+<figure id="vrn"></figure>
+<script src="../comum/vrn.js"></script>
+<script>
+(function () {
+  var n = VRN.n, pct = VRN.pct, soma = VRN.soma;
+
+  // TSE, Perfil do Eleitorado por Seção 2026 (MT), Vila Rica (código 98990). [rótulo, homens, mulheres]
+  var IDADE = [
+    ['16 a 19 anos', 316, 379], ['20 a 29 anos', 1299, 1399], ['30 a 39 anos', 1310, 1366],
+    ['40 a 49 anos', 1454, 1333], ['50 a 59 anos', 1231, 1084], ['60 a 69 anos', 850, 724],
+    ['70 a 79 anos', 458, 341], ['80 anos ou mais', 198, 141]
+  ];
+  var ESCOLARIDADE = [
+    ['Analfabeto', 454, 269], ['Lê e escreve', 540, 353], ['Fundamental incompleto', 2373, 1704],
+    ['Fundamental completo', 416, 343], ['Médio incompleto', 1291, 1189], ['Médio completo', 1417, 1907],
+    ['Superior incompleto', 165, 274], ['Superior completo', 460, 728]
+  ];
+  var H = soma(IDADE.map(function (l) { return l[1]; })), M = soma(IDADE.map(function (l) { return l[2]; }));
+  var TOTAL = H + M;
+  var ATE39 = IDADE.slice(0, 3), DE40 = IDADE.slice(3);
+  var M_ATE39 = soma(ATE39.map(function (l) { return l[2]; })), T_ATE39 = M_ATE39 + soma(ATE39.map(function (l) { return l[1]; }));
+  var H_DE40 = soma(DE40.map(function (l) { return l[1]; })), T_DE40 = H_DE40 + soma(DE40.map(function (l) { return l[2]; }));
+  var SUP = ESCOLARIDADE[7], ANALF = ESCOLARIDADE[0];
+
+  function linhas(lista, sufixo) {
+    return lista.map(function (l) {
+      var t = l[1] + l[2];
+      return {
+        rotulo: l[0], e: l[1], d: l[2],
+        dica: '<strong>' + l[0] + (sufixo || '') + '</strong><br>Homens: ' + n(l[1]) + ' (' + pct(l[1] / t) + ')<br>Mulheres: ' + n(l[2]) + ' (' + pct(l[2] / t) + ')'
+      };
+    });
+  }
+  var LADOS = { esquerda: { nome: 'Homens', cor: 'var(--vrn-azul)' }, direita: { nome: 'Mulheres', cor: 'var(--vrn-vermelho)' } };
+  function bolinha(cor) { return '<span class="vrn-bolinha" style="background:var(--vrn-' + cor + ')"></span>'; }
+  var P_H = Math.round(H / TOTAL * 100);
+
+  VRN.grafico({
+    id: 'genero-2026',
+    chapeu: 'Eleições 2026',
+    titulo: 'Gênero do eleitorado',
+    subtitulo: 'Vila Rica, cadastro do TSE para 2026',
+    passos: [
+      {
+        aba: 'Total',
+        painel:
+          '<div class="vrn-dupla"><div>' +
+            '<p class="vrn-chave">' + bolinha('azul') + 'Homens</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + (Math.round(H / TOTAL * 1000) / 10) + '" data-casas="1" data-sufixo="%">' + pct(H / TOTAL) + '</p>' +
+            '<p class="vrn-rotulo"><strong>' + n(H) + '</strong> eleitores</p></div><div>' +
+            '<p class="vrn-chave">' + bolinha('vermelho') + 'Mulheres</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + (Math.round(M / TOTAL * 1000) / 10) + '" data-casas="1" data-sufixo="%">' + pct(M / TOTAL) + '</p>' +
+            '<p class="vrn-rotulo"><strong>' + n(M) + '</strong> eleitoras</p></div></div>' +
+          '<p class="vrn-extra">' + n(H - M) + ' homens a mais no cadastro</p>',
+        legenda: 'Cada ponto = 1% do eleitorado (cerca de ' + n(Math.round(TOTAL / 100)) + ' eleitores)',
+        vis: {
+          tipo: 'pontos',
+          grupos: [
+            { pontos: P_H, cor: 'var(--vrn-azul)', dica: '<strong>Homens</strong><br>' + n(H) + ' eleitores · ' + pct(H / TOTAL) },
+            { pontos: 100 - P_H, cor: 'var(--vrn-vermelho)', dica: '<strong>Mulheres</strong><br>' + n(M) + ' eleitoras · ' + pct(M / TOTAL) }
+          ]
+        }
+      },
+      {
+        aba: 'Idade',
+        painel:
+          '<div class="vrn-dupla"><div>' +
+            '<p class="vrn-chave">' + bolinha('vermelho') + 'Até 39 anos</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + (Math.round(M_ATE39 / T_ATE39 * 1000) / 10) + '" data-casas="1" data-sufixo="%">' + pct(M_ATE39 / T_ATE39) + '</p>' +
+            '<p class="vrn-rotulo">são mulheres (<strong>' + n(M_ATE39) + '</strong> de ' + n(T_ATE39) + ')</p></div><div>' +
+            '<p class="vrn-chave">' + bolinha('azul') + '40 anos ou mais</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + (Math.round(H_DE40 / T_DE40 * 1000) / 10) + '" data-casas="1" data-sufixo="%">' + pct(H_DE40 / T_DE40) + '</p>' +
+            '<p class="vrn-rotulo">são homens (<strong>' + n(H_DE40) + '</strong> de ' + n(T_DE40) + ')</p></div></div>',
+        legenda: 'Em negrito, o grupo maior em cada faixa',
+        vis: { tipo: 'piramide', esquerda: LADOS.esquerda, direita: LADOS.direita, linhas: linhas(IDADE) }
+      },
+      {
+        aba: 'Escolaridade',
+        painel:
+          '<p class="vrn-chave">' + bolinha('vermelho') + 'Com curso superior completo</p>' +
+          '<p class="vrn-num" data-conta="' + (Math.round(SUP[2] / (SUP[1] + SUP[2]) * 1000) / 10) + '" data-casas="1" data-sufixo="%">' + pct(SUP[2] / (SUP[1] + SUP[2])) + '</p>' +
+          '<p class="vrn-rotulo">são mulheres (<strong>' + n(SUP[2]) + '</strong> de ' + n(SUP[1] + SUP[2]) + ')</p>' +
+          '<p class="vrn-extra">' + bolinha('azul') + 'Entre os analfabetos, ' + pct(ANALF[1] / (ANALF[1] + ANALF[2])) + ' são homens</p>',
+        legenda: 'Escolaridade declarada; em negrito, o grupo maior',
+        vis: { tipo: 'piramide', esquerda: LADOS.esquerda, direita: LADOS.direita, linhas: linhas(ESCOLARIDADE) }
+      }
+    ],
+    fonte: 'Fonte: TSE, Perfil do Eleitorado por Seção 2026. A escolaridade é a declarada pelo eleitor e pode estar desatualizada.',
+    tabela: {
+      colunas: ['Recorte', 'Homens', 'Mulheres'],
+      grupos: [
+        { linhas: [['Total', n(H), n(M)]] },
+        { titulo: 'Por idade', linhas: IDADE.map(function (l) { return [l[0], n(l[1]), n(l[2])]; }) },
+        { titulo: 'Por escolaridade', linhas: ESCOLARIDADE.map(function (l) { return [l[0], n(l[1]), n(l[2])]; }) }
+      ]
+    }
+  });
+})();
+</script>
+</body>
+</html>

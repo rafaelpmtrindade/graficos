@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Idade do eleitorado de Vila Rica</title>
+<meta name="robots" content="noindex, indexifembedded">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../comum/vrn.css">
+</head>
+<body>
+<figure id="vrn"></figure>
+<script src="../comum/vrn.js"></script>
+<script>
+(function () {
+  var n = VRN.n, pct = VRN.pct, soma = VRN.soma;
+
+  // TSE, Perfil do Eleitorado por Seção 2026 (MT), Vila Rica (código 98990), faixas do arquivo
+  var FAIXAS = [
+    ['16 anos', 95], ['17 anos', 152], ['18 anos', 201], ['19 anos', 247], ['20 anos', 252],
+    ['21 a 24 anos', 1031], ['25 a 29 anos', 1415], ['30 a 34 anos', 1373], ['35 a 39 anos', 1303],
+    ['40 a 44 anos', 1411], ['45 a 49 anos', 1376], ['50 a 54 anos', 1232], ['55 a 59 anos', 1083],
+    ['60 a 64 anos', 897], ['65 a 69 anos', 677], ['70 a 74 anos', 476], ['75 a 79 anos', 323],
+    ['80 a 84 anos', 195], ['85 a 89 anos', 93], ['90 a 94 anos', 40], ['95 a 99 anos', 10], ['100 anos ou mais', 1]
+  ];
+  function faixa(de, ate) { return soma(FAIXAS.slice(de, ate + 1).map(function (f) { return f[1]; })); }
+  var TOTAL = faixa(0, FAIXAS.length - 1);
+  var JOVENS = faixa(0, 2);          // 16, 17 e 18 anos
+  var IDOSOS = faixa(13, 21);        // 60 anos ou mais
+  var GRUPOS = [
+    { rotulo: '16 a 18 anos', valor: JOVENS, cor: 'var(--vrn-azul)' },
+    { rotulo: '19 a 29 anos', valor: faixa(3, 6), cor: 'var(--vrn-cinza)' },
+    { rotulo: '30 a 39 anos', valor: faixa(7, 8), cor: 'var(--vrn-cinza)' },
+    { rotulo: '40 a 49 anos', valor: faixa(9, 10), cor: 'var(--vrn-cinza)' },
+    { rotulo: '50 a 59 anos', valor: faixa(11, 12), cor: 'var(--vrn-cinza)' },
+    { rotulo: '60 anos ou mais', valor: IDOSOS, cor: 'var(--vrn-vermelho)' }
+  ];
+  GRUPOS.forEach(function (g) { g.dica = '<strong>' + g.rotulo + '</strong><br>' + n(g.valor) + ' eleitores · ' + pct(g.valor / TOTAL); });
+  var vezes = Math.round(IDOSOS / JOVENS);
+
+  // 1 ponto = 1% do eleitorado
+  var P_IDOSOS = Math.round(IDOSOS / TOTAL * 100), P_JOVENS = Math.round(JOVENS / TOTAL * 100);
+  var OUTROS = TOTAL - IDOSOS - JOVENS;
+
+  VRN.grafico({
+    id: 'idade-2026',
+    chapeu: 'Eleições 2026',
+    titulo: 'Idade do eleitorado',
+    subtitulo: 'Vila Rica, cadastro do TSE para 2026',
+    passos: [
+      {
+        aba: 'Em cada 100',
+        painel:
+          '<p class="vrn-chave"><span class="vrn-bolinha" style="background:var(--vrn-vermelho)"></span>60 anos ou mais</p>' +
+          '<p class="vrn-num" data-conta="' + (Math.round(IDOSOS / TOTAL * 1000) / 10) + '" data-casas="1" data-sufixo="%">' + pct(IDOSOS / TOTAL) + '</p>' +
+          '<p class="vrn-rotulo"><strong>' + n(IDOSOS) + '</strong> eleitores, quase 1 em cada 5</p>' +
+          '<p class="vrn-extra"><span class="vrn-bolinha" style="background:var(--vrn-azul)"></span>' + pct(JOVENS / TOTAL) + ' têm de 16 a 18 anos (' + n(JOVENS) + ' eleitores)</p>',
+        legenda: 'Cada ponto = 1% do eleitorado (cerca de ' + n(Math.round(TOTAL / 100)) + ' eleitores)',
+        vis: {
+          tipo: 'pontos',
+          grupos: [
+            { pontos: P_IDOSOS, cor: 'var(--vrn-vermelho)', dica: GRUPOS[5].dica },
+            { pontos: 100 - P_IDOSOS - P_JOVENS, cor: 'var(--vrn-cinza)', dica: '<strong>19 a 59 anos</strong><br>' + n(OUTROS) + ' eleitores · ' + pct(OUTROS / TOTAL) },
+            { pontos: P_JOVENS, cor: 'var(--vrn-azul)', dica: GRUPOS[0].dica }
+          ]
+        }
+      },
+      {
+        aba: 'Por faixa',
+        painel:
+          '<p class="vrn-chave">Para cada eleitor de 16 a 18 anos</p>' +
+          '<p class="vrn-num">' + vezes + ' eleitores</p>' +
+          '<p class="vrn-rotulo">têm 60 anos ou mais: <strong>' + n(IDOSOS) + '</strong> contra <strong>' + n(JOVENS) + '</strong></p>',
+        legenda: '<span class="vrn-bolinha" style="background:var(--vrn-vermelho)"></span>60 ou mais ' +
+          '<span class="vrn-bolinha" style="background:var(--vrn-azul);margin-left:8px"></span>16 a 18 ' +
+          '<span class="vrn-bolinha" style="background:var(--vrn-cinza);margin-left:8px"></span>demais faixas',
+        vis: { tipo: 'barras', linhas: GRUPOS }
+      }
+    ],
+    fonte: 'Fonte: TSE, Perfil do Eleitorado por Seção 2026. Mostra o eleitorado registrado, não quantos vão votar.',
+    tabela: {
+      colunas: ['Faixa etária', 'Eleitores', '%'],
+      grupos: [
+        { linhas: GRUPOS.map(function (g) { return [g.rotulo, n(g.valor), pct(g.valor / TOTAL).replace('%', '')]; })
+            .concat([['Total', n(TOTAL), '100,0']]) },
+        { titulo: 'Faixas do arquivo do TSE', linhas: FAIXAS.map(function (f) { return [f[0], n(f[1]), pct(f[1] / TOTAL).replace('%', '')]; }) }
+      ]
+    }
+  });
+})();
+</script>
+</body>
+</html>

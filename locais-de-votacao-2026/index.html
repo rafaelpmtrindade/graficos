@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locais de votação de Vila Rica</title>
+<meta name="robots" content="noindex, indexifembedded">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../comum/vrn.css">
+</head>
+<body>
+<figure id="vrn"></figure>
+<script src="../comum/vrn.js"></script>
+<script>
+(function () {
+  var n = VRN.n, pct = VRN.pct, soma = VRN.soma;
+
+  // TSE, Perfil do Eleitorado por Seção 2026 (MT), Vila Rica (código 98990), 16ª Zona.
+  // [nome curto, nome no arquivo do TSE, eleitores, seções] — do maior para o menor
+  var LOCAIS = [
+    ['E.E. Maria Esther Peres', 'Escola Estadual Professora Maria Esther Peres', 4389, 16],
+    ['Colégio Vale do Araguaia (CVA)', 'Colégio Vale do Araguaia (CVA)', 2868, 9],
+    ['E.M. Ilma Valadares de Aragão', 'Escola Municipal Professora Ilma Valadares de Aragão', 2490, 10],
+    ['E.E. Vila Rica', 'CDCE – Escola Estadual Vila Rica', 2175, 7],
+    ['E.M. Alair Álvares Fernandes', 'Escola Municipal Alair Álvares Fernandes', 1293, 4],
+    ['E.M. Nossa Senhora Aparecida', 'Escola Municipal Nossa Senhora Aparecida', 274, 3],
+    ['E.M. Domingos Pereira Ávila', 'Escola Municipal Domingos Pereira Ávila', 227, 1],
+    ['E.M. Procópio Faria', 'Escola Municipal Procópio Faria', 167, 1]
+  ];
+  var TOTAL = soma(LOCAIS.map(function (l) { return l[2]; }));
+  var SECOES = soma(LOCAIS.map(function (l) { return l[3]; }));
+  var MAIORES = LOCAIS.slice(0, 4), DEMAIS = LOCAIS.slice(4);
+  var EL_MAIORES = soma(MAIORES.map(function (l) { return l[2]; }));
+  var SEC_MAIORES = soma(MAIORES.map(function (l) { return l[3]; }));
+  var EL_DEMAIS = TOTAL - EL_MAIORES;
+  function secoes(s) { return s + (s === 1 ? ' seção' : ' seções'); }
+
+  var LINHAS = LOCAIS.map(function (l, i) {
+    return {
+      rotulo: l[0], extra: secoes(l[3]), valor: l[2],
+      cor: i < 4 ? 'var(--vrn-vermelho)' : 'var(--vrn-cinza)',
+      dica: '<strong>' + l[1] + '</strong><br>' + n(l[2]) + ' eleitores · ' + pct(l[2] / TOTAL) + ' · ' + secoes(l[3])
+    };
+  });
+  var P_MAIORES = Math.round(EL_MAIORES / TOTAL * 100);
+
+  VRN.grafico({
+    id: 'locais-de-votacao-2026',
+    chapeu: 'Eleições 2026',
+    titulo: 'Onde vota Vila Rica',
+    subtitulo: 'Os ' + LOCAIS.length + ' locais de votação, cadastro do TSE para 2026',
+    passos: [
+      {
+        aba: 'Concentração',
+        painel:
+          '<p class="vrn-chave"><span class="vrn-bolinha" style="background:var(--vrn-vermelho)"></span>Nos 4 maiores locais</p>' +
+          '<p class="vrn-num" data-conta="' + (Math.round(EL_MAIORES / TOTAL * 1000) / 10) + '" data-casas="1" data-sufixo="%">' + pct(EL_MAIORES / TOTAL) + '</p>' +
+          '<p class="vrn-rotulo"><strong>' + n(EL_MAIORES) + '</strong> eleitores e <strong>' + SEC_MAIORES + '</strong> das ' + SECOES + ' seções</p>' +
+          '<p class="vrn-extra"><span class="vrn-bolinha" style="background:var(--vrn-cinza)"></span>Os outros 4 locais: ' + n(EL_DEMAIS) + ' eleitores (' + pct(EL_DEMAIS / TOTAL) + ')</p>',
+        legenda: 'Cada ponto = 1% do eleitorado (cerca de ' + n(Math.round(TOTAL / 100)) + ' eleitores)',
+        vis: {
+          tipo: 'pontos',
+          grupos: [
+            { pontos: P_MAIORES, cor: 'var(--vrn-vermelho)', dica: '<strong>4 maiores locais</strong><br>' + n(EL_MAIORES) + ' eleitores · ' + pct(EL_MAIORES / TOTAL) },
+            { pontos: 100 - P_MAIORES, cor: 'var(--vrn-cinza)', dica: '<strong>Outros 4 locais</strong><br>' + n(EL_DEMAIS) + ' eleitores · ' + pct(EL_DEMAIS / TOTAL) }
+          ]
+        }
+      },
+      {
+        aba: 'Por local',
+        painel:
+          '<p class="vrn-chave">Maior local de votação</p>' +
+          '<p class="vrn-num" data-conta="' + LOCAIS[0][2] + '">' + n(LOCAIS[0][2]) + '</p>' +
+          '<p class="vrn-rotulo">eleitores na <strong>' + LOCAIS[0][0] + '</strong>, em ' + secoes(LOCAIS[0][3]) + '</p>',
+        legenda: '<span class="vrn-bolinha" style="background:var(--vrn-vermelho)"></span>4 maiores locais ' +
+          '<span class="vrn-bolinha" style="background:var(--vrn-cinza);margin-left:8px"></span>demais locais',
+        vis: { tipo: 'barras', linhas: LINHAS }
+      }
+    ],
+    fonte: 'Fonte: TSE, Perfil do Eleitorado por Seção 2026, 16ª Zona Eleitoral.',
+    tabela: {
+      colunas: ['Local de votação', 'Seções', 'Eleitores', '%'],
+      grupos: [{
+        linhas: LOCAIS.map(function (l) { return [l[1], l[3], n(l[2]), pct(l[2] / TOTAL).replace('%', '')]; })
+          .concat([['Total', SECOES, n(TOTAL), '100,0']])
+      }]
+    }
+  });
+})();
+</script>
+</body>
+</html>

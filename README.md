@@ -1,12 +1,15 @@
 # Gráficos do Vila Rica News
 
 Gráficos interativos para embutir nas matérias do [Vila Rica News](https://vilaricanews.com.br).
-Cada gráfico fica numa pasta e é publicado pelo GitHub Pages em
+Cada gráfico fica numa pasta (os novos usam o motor comum em `comum/`) e é publicado pelo GitHub Pages em
 `https://rafaelpmtrindade.github.io/graficos/<pasta>/`.
 
 | Pasta | Matéria | Altura do iframe |
 |---|---|---|
 | `eleitorado-2026` | Quem são os 13.883 eleitores de Vila Rica? (TSE, Perfil do Eleitorado 2026) | 750px |
+| `idade-2026` | Quase um em cada cinco eleitores de Vila Rica tem 60 anos ou mais | 700px |
+| `locais-de-votacao-2026` | Quatro locais concentram quase 86% do eleitorado de Vila Rica | 730px |
+| `genero-2026` | Homens são maioria entre os eleitores de Vila Rica | 740px |
 
 ## Como embutir
 
