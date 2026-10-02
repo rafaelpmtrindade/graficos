@@ -118,6 +118,11 @@
   #vr-eleitorado .vre-dica strong { font-weight: 500; }
 
   /* Rodapé e tabela */
+  /* Dentro de iframe: ocupa a altura toda, e a sobra vira respiro em vez de faixa branca no fim */
+  #vr-eleitorado.vre-iframe { min-height: 100vh; display: flex; flex-direction: column; }
+  #vr-eleitorado.vre-iframe .vre-grade { margin-top: auto; padding-top: 18px; }
+  #vr-eleitorado.vre-iframe figcaption { margin-top: auto; }
+  #vr-eleitorado.vre-iframe .vre-legenda-grade { margin-bottom: 16px; }
   #vr-eleitorado figcaption { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--vre-linha); font-size: 12.5px; color: var(--vre-tinta-3); }
   #vr-eleitorado .vre-rodape { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   #vr-eleitorado .vre-rodape p { flex: 1; }
@@ -135,9 +140,12 @@
     #vr-eleitorado .vre-titulo { font-size: 21px; }
     #vr-eleitorado .vre-num { font-size: 48px; }
     #vr-eleitorado .vre-num-m { font-size: 36px; }
-    #vr-eleitorado .vre-controles { flex-wrap: wrap; }
-    #vr-eleitorado .vre-rever { order: 2; }
+    #vr-eleitorado .vre-controles { gap: 8px; }
     #vr-eleitorado .vre-rodape { flex-direction: column; gap: 10px; }
+  }
+  @media (max-width: 360px) {
+    #vr-eleitorado .vre-aba { font-size: 13px; padding: 8px 4px; }
+    #vr-eleitorado .vre-rever span { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     #vr-eleitorado .vre-ponto, #vr-eleitorado .vre-painel { transition: none !important; animation: none !important; }
@@ -156,7 +164,7 @@
     </div>
     <button type="button" class="vre-rever" aria-label="Rever a animação desde o início">
       <svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8a5.5 5.5 0 1 0 1.7-4"/><path d="M2.5 2.5v3h3"/></svg>
-      Rever
+      <span>Rever</span>
     </button>
   </div>
 
@@ -263,11 +271,13 @@
   // e os sem biometria ficam juntos no fim.
   function posicionar() {
     var largura = raiz.clientWidth;
-    colunas = largura < 500 ? 14 : 20;
+    colunas = largura < 420 ? 16 : 20;
     linhas = Math.ceil(N / colunas);
     svg.setAttribute('viewBox', '0 0 ' + (colunas * PASSO_GRADE) + ' ' + (linhas * PASSO_GRADE));
     pontos.forEach(function (p, i) {
       var col = Math.floor(i / linhas), lin = i % linhas;
+      // a última coluna (incompleta) encosta embaixo: os sem biometria ficam juntos no canto
+      if (col === colunas - 1) lin += colunas * linhas - N;
       p.setAttribute('cx', col * PASSO_GRADE + PASSO_GRADE / 2);
       p.setAttribute('cy', lin * PASSO_GRADE + PASSO_GRADE / 2);
       p.dataset.col = col;
@@ -370,8 +380,9 @@
     var escala = r.width / (colunas * PASSO_GRADE);
     var col = Math.floor((ev.clientX - r.left) / (PASSO_GRADE * escala));
     var lin = Math.floor((ev.clientY - r.top) / (PASSO_GRADE * escala));
-    var i = col * linhas + lin;
-    if (col < 0 || col >= colunas || lin < 0 || lin >= linhas || i >= N) { esconderDica(); return; }
+    var vazios = colunas * linhas - N;
+    var i = col * linhas + (col === colunas - 1 ? lin - vazios : lin);
+    if (col < 0 || col >= colunas || lin < 0 || lin >= linhas || (col === colunas - 1 && lin < vazios) || i >= N) { esconderDica(); return; }
     var g = grupoDoPonto(i, passoAtual);
     var info = GRUPOS[g];
     dica.innerHTML = '<strong>' + info.nome + '</strong><br>' + fmt.format(info.valor) + ' eleitores · ' + pct(info.valor / D.total);
@@ -397,6 +408,7 @@
   svg.addEventListener('pointerleave', function (ev) { if (ev.pointerType !== 'touch') esconderDica(); });
   document.addEventListener('pointerdown', function (ev) { if (!svg.contains(ev.target)) esconderDica(); });
 
+  if (window.self !== window.top) raiz.classList.add('vre-iframe');
   posicionar();
   var larguraAnterior = raiz.clientWidth;
   window.addEventListener('resize', function () {
