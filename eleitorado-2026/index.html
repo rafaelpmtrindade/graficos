@@ -118,11 +118,13 @@
   #vr-eleitorado .vre-dica strong { font-weight: 500; }
 
   /* Rodapé e tabela */
-  /* Dentro de iframe: ocupa a altura toda, e a sobra vira respiro em vez de faixa branca no fim */
-  #vr-eleitorado.vre-iframe { min-height: 100vh; display: flex; flex-direction: column; }
-  #vr-eleitorado.vre-iframe .vre-grade { margin-top: auto; padding-top: 18px; }
-  #vr-eleitorado.vre-iframe figcaption { margin-top: auto; }
-  #vr-eleitorado.vre-iframe .vre-legenda-grade { margin-bottom: 16px; }
+  /* Dentro de iframe a matéria já dá as margens: o gráfico usa a coluna toda */
+  #vr-eleitorado.vre-iframe { max-width: none; margin: 0; padding: 4px 2px 2px; }
+  /* ...e ocupa a altura toda; a sobra vira respiro em vez de faixa branca no fim */
+  #vr-eleitorado.vre-encher { min-height: 100vh; display: flex; flex-direction: column; }
+  #vr-eleitorado.vre-encher .vre-grade { margin-top: auto; padding-top: 18px; }
+  #vr-eleitorado.vre-encher figcaption { margin-top: auto; }
+  #vr-eleitorado.vre-encher .vre-legenda-grade { margin-bottom: 16px; }
   #vr-eleitorado figcaption { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--vre-linha); font-size: 12.5px; color: var(--vre-tinta-3); }
   #vr-eleitorado .vre-rodape { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
   #vr-eleitorado .vre-rodape p { flex: 1; }
@@ -269,9 +271,33 @@
 
   // Ordem por coluna: homens enchem a esquerda, mulheres a direita,
   // e os sem biometria ficam juntos no fim.
+  // Quantas colunas: as menos possíveis (pontos maiores) que ainda cabem na altura.
+  // No iframe, a altura é a do próprio iframe; solto na página, até 60% da largura.
+  var COLUNAS_POSSIVEIS = [12, 14, 16, 18, 20, 24, 28, 35];
+  var CELULA_MAX = 40, CELULA_MIN = 12;
+  var emIframe = window.self !== window.top;
+  function escolherColunas() {
+    var largura = svg.parentNode.clientWidth;
+    var disponivel = Math.max(160, largura * 0.6);
+    if (emIframe) {
+      raiz.classList.remove('vre-encher');
+      var resto = raiz.getBoundingClientRect().height - svg.getBoundingClientRect().height;
+      raiz.classList.add('vre-encher');
+      disponivel = window.innerHeight - resto - 2;
+    }
+    var escolha = COLUNAS_POSSIVEIS[COLUNAS_POSSIVEIS.length - 1];
+    for (var k = 0; k < COLUNAS_POSSIVEIS.length; k++) {
+      var c = COLUNAS_POSSIVEIS[k], celula = largura / c;
+      if (celula > CELULA_MAX) continue;
+      if (celula < CELULA_MIN) break;
+      escolha = c;
+      if (Math.ceil(N / c) * celula <= disponivel) break;
+    }
+    return escolha;
+  }
+
   function posicionar() {
-    var largura = raiz.clientWidth;
-    colunas = largura < 420 ? 16 : 20;
+    colunas = escolherColunas();
     linhas = Math.ceil(N / colunas);
     svg.setAttribute('viewBox', '0 0 ' + (colunas * PASSO_GRADE) + ' ' + (linhas * PASSO_GRADE));
     pontos.forEach(function (p, i) {
@@ -408,12 +434,15 @@
   svg.addEventListener('pointerleave', function (ev) { if (ev.pointerType !== 'touch') esconderDica(); });
   document.addEventListener('pointerdown', function (ev) { if (!svg.contains(ev.target)) esconderDica(); });
 
-  if (window.self !== window.top) raiz.classList.add('vre-iframe');
+  if (emIframe) raiz.classList.add('vre-iframe', 'vre-encher');
   posicionar();
-  var larguraAnterior = raiz.clientWidth;
+  // a fonte da marca muda a altura dos textos quando termina de carregar
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(posicionar);
+  var tamanhoAnterior = raiz.clientWidth + 'x' + window.innerHeight;
   window.addEventListener('resize', function () {
-    if (raiz.clientWidth === larguraAnterior) return;
-    larguraAnterior = raiz.clientWidth;
+    var tamanho = raiz.clientWidth + 'x' + window.innerHeight;
+    if (tamanho === tamanhoAnterior) return;
+    tamanhoAnterior = tamanho;
     posicionar();
   });
 
