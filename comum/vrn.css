@@ -129,6 +129,27 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
 .vrn-pir-valor.maior { color: var(--vrn-tinta); font-weight: 700; }
 .vrn-pir.visivel .vrn-pir-valor { opacity: 1; }
 
+/* Colunas e linhas por hora */
+.vrn-plano { display: block; overflow: visible; touch-action: pan-y; }
+.vrn-faixa { fill: var(--vrn-trilho); }
+.vrn-faixa-rotulo { font-size: 12.5px; fill: var(--vrn-tinta-2); }
+.vrn-grade { stroke: var(--vrn-linha); stroke-width: 1; }
+.vrn-base { stroke: #bdbdbd; stroke-width: 1; }
+.vrn-eixo { font-size: 12px; fill: var(--vrn-tinta-3); }
+.vrn-col { fill: var(--cor); transform: scaleY(0); transition: transform .6s cubic-bezier(.22,1,.36,1), opacity .2s ease; }
+.vrn-col.visivel { transform: scaleY(1); }
+.vrn-col-valor { font-size: 12px; font-weight: 500; fill: var(--vrn-tinta); opacity: 0; transition: opacity .3s ease; }
+.vrn-col-valor.visivel { opacity: 1; }
+.vrn-lin { fill: none; stroke: var(--cor); stroke-width: 2.5px; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.2s ease; }
+.vrn-lin.visivel { stroke-dashoffset: 0; }
+.vrn-lin-ponto { fill: var(--cor); stroke: var(--vrn-fundo); stroke-width: 2px; opacity: 0; transition: opacity .3s ease .9s; }
+.vrn-lin-rotulo { font-size: 12.5px; font-weight: 700; fill: var(--vrn-tinta); opacity: 0; transition: opacity .3s ease .9s; }
+.vrn-lin-ponto.visivel, .vrn-lin-rotulo.visivel { opacity: 1; }
+.vrn-guia { stroke: var(--vrn-tinta-3); stroke-width: 1; opacity: 0; }
+.vrn-guia.on { opacity: .6; }
+.vrn-traco { width: 16px; height: 3px; border-radius: 2px; flex: none; display: inline-block; }
+.vrn-alerta { width: 12px; height: 12px; border-radius: 3px; flex: none; display: inline-block; background: #ffd400; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+
 /* Dica */
 .vrn-dica {
   position: absolute; z-index: 3; pointer-events: none; opacity: 0;
@@ -171,5 +192,6 @@ html, body { margin: 0; padding: 0; background: #ffffff; }
   .vrn-rever span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .vrn-ponto, .vrn-painel, .vrn-legenda, .vrn-camada, .vrn-barra-fill, .vrn-pir-fill, .vrn-barra-valor, .vrn-pir-valor { transition: none !important; animation: none !important; }
+  .vrn-ponto, .vrn-painel, .vrn-legenda, .vrn-camada, .vrn-barra-fill, .vrn-pir-fill, .vrn-barra-valor, .vrn-pir-valor,
+  .vrn-col, .vrn-col-valor, .vrn-lin, .vrn-lin-ponto, .vrn-lin-rotulo { transition: none !important; animation: none !important; }
 }

@@ -229,7 +229,147 @@
     };
   }
 
-  var TIPOS = { pontos: Pontos, barras: Barras, piramide: Piramide };
+  // ---------- Peças comuns às séries por hora (colunas e linhas) ----------
+  function novoEl(pai, nome, attrs, texto) {
+    var e = document.createElementNS(NS, nome);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (texto != null) e.textContent = texto;
+    pai.appendChild(e);
+    return e;
+  }
+  function plano(camada) {
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    svg.setAttribute('class', 'vrn-plano');
+    camada.appendChild(svg);
+    return svg;
+  }
+  // faixa clara de fundo (ex.: urnas abertas), da coluna "de" até a coluna "ate"
+  function desenharFaixa(svg, f, esq, banda, topo, ph) {
+    if (!f) return;
+    var xa = esq + f.de * banda, xf = esq + (f.ate + 1) * banda;
+    novoEl(svg, 'rect', { x: xa, y: topo - 26, width: xf - xa, height: ph + 26, 'class': 'vrn-faixa' });
+    novoEl(svg, 'text', { x: xa + 8, y: topo - 9, 'class': 'vrn-faixa-rotulo' }, f.rotulo);
+  }
+
+  // ---------- Colunas: uma por hora (ou etapa em sequência) ----------
+  // v.linhas: [{rotulo, valor, cor, dica}]; v.max; v.grade: [valores com linha]; v.formato(valor); v.marcar: índices com número mesmo em tela estreita
+  function Colunas(camada, v, reduzido) {
+    var svg = plano(camada), L = v.linhas;
+    var max = v.max || Math.max.apply(null, L.map(function (l) { return l.valor; }));
+    var fmt = v.formato || n, barras = [], geo = null, dentro = false;
+    function mostrar(b, i, animar) {
+      var atraso = animar && !reduzido ? i * 45 : 0;
+      b.r.style.transitionDelay = atraso + 'ms';
+      b.r.classList.add('visivel');
+      if (b.val) { b.val.style.transitionDelay = (atraso + 350) + 'ms'; b.val.classList.add('visivel'); }
+    }
+    return {
+      desenhar: function (W, H) {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        var esq = 40, dir = 4, topo = v.faixa ? 36 : 22, baixo = 24;
+        var pw = W - esq - dir, ph = Math.max(60, H - topo - baixo), banda = pw / L.length;
+        svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+        var y = function (val) { return topo + ph - val / max * ph; };
+        desenharFaixa(svg, v.faixa, esq, banda, topo, ph);
+        (v.grade || []).forEach(function (g) {
+          novoEl(svg, 'line', { x1: esq, x2: esq + pw, y1: y(g), y2: y(g), 'class': 'vrn-grade' });
+          novoEl(svg, 'text', { x: esq - 6, y: y(g) + 4, 'text-anchor': 'end', 'class': 'vrn-eixo' }, fmt(g));
+        });
+        var todos = banda >= 34, passoX = banda >= 30 ? 1 : 2;
+        barras = L.map(function (l, i) {
+          var bw = Math.min(28, banda * 0.62), x = esq + i * banda + (banda - bw) / 2, yv = y(l.valor);
+          var r = novoEl(svg, 'rect', { x: x, y: yv, width: bw, height: Math.max(1, topo + ph - yv), rx: 3, 'class': 'vrn-col' });
+          r.style.setProperty('--cor', l.cor || 'var(--vrn-cinza)');
+          r.style.transformOrigin = (x + bw / 2) + 'px ' + (topo + ph) + 'px';
+          var val = (todos || (v.marcar || []).indexOf(i) >= 0) ? novoEl(svg, 'text', { x: x + bw / 2, y: yv - 6, 'text-anchor': 'middle', 'class': 'vrn-col-valor' }, fmt(l.valor)) : null;
+          if (i % passoX === 0) novoEl(svg, 'text', { x: x + bw / 2, y: topo + ph + 17, 'text-anchor': 'middle', 'class': 'vrn-eixo' }, l.rotulo);
+          return { r: r, val: val, dados: l, cx: x + bw / 2, y: yv };
+        });
+        novoEl(svg, 'line', { x1: esq, x2: esq + pw, y1: topo + ph, y2: topo + ph, 'class': 'vrn-base' });
+        geo = { esq: esq, banda: banda };
+        if (dentro) barras.forEach(function (b, i) { mostrar(b, i, false); });
+      },
+      entrar: function (animar) { dentro = true; barras.forEach(function (b, i) { mostrar(b, i, animar); }); },
+      sair: function () {
+        dentro = false;
+        barras.forEach(function (b) { b.r.style.transitionDelay = '0ms'; b.r.classList.remove('visivel'); if (b.val) { b.val.style.transitionDelay = '0ms'; b.val.classList.remove('visivel'); } });
+      },
+      alvo: function (ev) {
+        if (!geo) return null;
+        var rc = svg.getBoundingClientRect(), i = Math.floor((ev.clientX - rc.left - geo.esq) / geo.banda);
+        var b = barras[i];
+        if (!b) return null;
+        return { chave: b, html: b.dados.dica, x: rc.left + b.cx, y: rc.top + b.y };
+      },
+      destacar: function (chave) { barras.forEach(function (b) { b.r.classList.toggle('vrn-apagado', !!chave && b !== chave); }); }
+    };
+  }
+
+  // ---------- Linhas: uma ou duas séries por hora ----------
+  // v.rotulos; v.series: [{nome, cor, valores}]; v.min, v.max; v.grade; v.formato; v.dicas[i]; v.marcar: [{serie, i, abaixo}]
+  function Linhas(camada, v, reduzido) {
+    var svg = plano(camada), N = v.rotulos.length, fmt = v.formato || n;
+    var caminhos = [], marcas = [], guia = null, geo = null, dentro = false;
+    function mostrar(animar) {
+      caminhos.forEach(function (c) { c.style.transitionDuration = animar && !reduzido ? '' : '0s'; c.classList.add('visivel'); });
+      marcas.forEach(function (m) { m.style.transitionDelay = animar && !reduzido ? '' : '0s'; m.classList.add('visivel'); });
+    }
+    return {
+      desenhar: function (W, H) {
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        var esq = 40, dir = 8, topo = v.faixa ? 36 : 22, baixo = 24;
+        var pw = W - esq - dir, ph = Math.max(60, H - topo - baixo), banda = pw / N;
+        svg.setAttribute('width', W); svg.setAttribute('height', H); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+        var x = function (i) { return esq + (i + 0.5) * banda; };
+        var y = function (val) { return topo + ph - (val - v.min) / (v.max - v.min) * ph; };
+        desenharFaixa(svg, v.faixa, esq, banda, topo, ph);
+        (v.grade || []).forEach(function (g) {
+          novoEl(svg, 'line', { x1: esq, x2: esq + pw, y1: y(g), y2: y(g), 'class': 'vrn-grade' });
+          novoEl(svg, 'text', { x: esq - 6, y: y(g) + 4, 'text-anchor': 'end', 'class': 'vrn-eixo' }, fmt(g, true));
+        });
+        var passoX = banda >= 30 ? 1 : 2;
+        v.rotulos.forEach(function (r, i) { if (i % passoX === 0) novoEl(svg, 'text', { x: x(i), y: topo + ph + 17, 'text-anchor': 'middle', 'class': 'vrn-eixo' }, r); });
+        guia = novoEl(svg, 'line', { x1: 0, x2: 0, y1: topo - 4, y2: topo + ph, 'class': 'vrn-guia' });
+        caminhos = v.series.map(function (s) {
+          var d = s.valores.map(function (val, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(val).toFixed(1); }).join(' ');
+          var c = novoEl(svg, 'path', { d: d, pathLength: 1, 'class': 'vrn-lin' });
+          c.style.setProperty('--cor', s.cor);
+          return c;
+        });
+        marcas = [];
+        (v.marcar || []).forEach(function (m) {
+          var s = v.series[m.serie], cx = x(m.i), cy = y(s.valores[m.i]);
+          var p = novoEl(svg, 'circle', { cx: cx, cy: cy, r: 5, 'class': 'vrn-lin-ponto' });
+          p.style.setProperty('--cor', s.cor);
+          var t = novoEl(svg, 'text', { x: cx, y: m.abaixo ? cy + 20 : cy - 10, 'text-anchor': 'middle', 'class': 'vrn-lin-rotulo' }, fmt(s.valores[m.i]));
+          marcas.push(p, t);
+        });
+        geo = { esq: esq, banda: banda, x: x, y: y };
+        if (dentro) mostrar(false);
+      },
+      entrar: function (animar) { dentro = true; mostrar(animar); },
+      sair: function () {
+        dentro = false;
+        caminhos.concat(marcas).forEach(function (e) { e.style.transitionDuration = '0s'; e.style.transitionDelay = '0s'; e.classList.remove('visivel'); });
+      },
+      alvo: function (ev) {
+        if (!geo) return null;
+        var rc = svg.getBoundingClientRect(), i = Math.floor((ev.clientX - rc.left - geo.esq) / geo.banda);
+        if (i < 0 || i >= N) return null;
+        var topoSerie = Math.min.apply(null, v.series.map(function (s) { return geo.y(s.valores[i]); }));
+        return { chave: i, html: v.dicas[i], x: rc.left + geo.x(i), y: rc.top + topoSerie - 6 };
+      },
+      destacar: function (chave) {
+        if (!guia) return;
+        if (chave == null) { guia.classList.remove('on'); return; }
+        guia.setAttribute('x1', geo.x(chave)); guia.setAttribute('x2', geo.x(chave)); guia.classList.add('on');
+      }
+    };
+  }
+
+  var TIPOS = { pontos: Pontos, barras: Barras, piramide: Piramide, colunas: Colunas, linhas: Linhas };
 
   function tabelaHtml(t) {
     var h = '<table><thead><tr>' +

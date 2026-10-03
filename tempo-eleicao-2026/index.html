@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Previsão do tempo no domingo da eleição em Vila Rica</title>
+<meta name="robots" content="noindex, indexifembedded">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../comum/vrn.css">
+</head>
+<body>
+<figure id="vrn"></figure>
+<script src="../comum/vrn.js"></script>
+<script>
+(function () {
+  var n = VRN.n;
+
+  // Open-Meteo, consulta de 03/10/2026: Vila Rica (10,01° S; 51,12° O), domingo 04/10, horário de Brasília.
+  // Chance de chuva = combinação de modelos (mesma do centro europeu); temperatura e sensação = combinação de modelos.
+  var HORAS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
+  var CHUVA = [6, 5, 6, 8, 12, 20, 35, 53, 67, 71, 71, 69, 68, 67, 63];
+  var TEMP = [24.4, 26.6, 28.4, 29.5, 30.8, 31.6, 32.8, 33.8, 33.9, 30.8, 28.3, 26.3, 25.9, 25.6, 25.4];
+  var SENS = [29.0, 31.5, 33.1, 34.0, 35.4, 36.6, 39.5, 40.5, 38.6, 34.5, 32.6, 31.0, 31.3, 30.8, 30.7];
+  var URNAS = { abre: 8, fecha: 17 };
+
+  function grau(v) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' °C'; }
+  function h(i) { return HORAS[i] + 'h'; }
+  function lista(idx) { return idx.map(h).join(idx.length === 2 ? ' e às ' : ', '); }
+
+  var maxChuva = Math.max.apply(null, CHUVA);
+  var horasMax = HORAS.map(function (x, i) { return i; }).filter(function (i) { return CHUVA[i] === maxChuva; });
+  var secoAte = 0; while (secoAte + 1 < CHUVA.length && CHUVA[secoAte + 1] < 20) secoAte++;   // última hora seguida abaixo de 20%
+  var iTemp = TEMP.indexOf(Math.max.apply(null, TEMP)), iSens = SENS.indexOf(Math.max.apply(null, SENS));
+  var faixa = { de: HORAS.indexOf(URNAS.abre), ate: HORAS.indexOf(URNAS.fecha), rotulo: 'Urnas abertas · ' + URNAS.abre + 'h às ' + URNAS.fecha + 'h' };
+  function bolinha(cor) { return '<span class="vrn-bolinha" style="background:var(--vrn-' + cor + ')"></span>'; }
+  function traco(cor) { return '<span class="vrn-traco" style="background:var(--vrn-' + cor + ')"></span>'; }
+  var ALERTA = '<p class="vrn-extra"><span class="vrn-alerta"></span>Aviso amarelo de tempestade do INMET</p>';
+
+  VRN.grafico({
+    id: 'tempo-eleicao-2026',
+    chapeu: 'Previsão do tempo',
+    titulo: 'Chuva e calor no domingo da eleição',
+    subtitulo: 'Vila Rica, previsão hora a hora (horário de Brasília)',
+    passos: [
+      {
+        aba: 'Chuva',
+        painel:
+          '<p class="vrn-chave">' + bolinha('azul') + 'Maior chance de chuva</p>' +
+          '<p class="vrn-num" data-conta="' + maxChuva + '" data-sufixo="%">' + maxChuva + '%</p>' +
+          '<p class="vrn-rotulo">às <strong>' + lista(horasMax) + '</strong>; até as ' + h(secoAte) + ', abaixo de 20%</p>' +
+          ALERTA,
+        legenda: bolinha('azul') + '60% ou mais <span class="vrn-bolinha" style="background:var(--vrn-cinza);margin-left:8px"></span>menos de 60%',
+        vis: {
+          tipo: 'colunas', max: 100, grade: [0, 50, 100], faixa: faixa,
+          formato: function (v) { return v + '%'; },
+          marcar: [secoAte, horasMax[0]],   // em tela estreita, só esses ganham número (vizinhos se sobrepõem)
+          linhas: HORAS.map(function (x, i) {
+            return { rotulo: x + 'h', valor: CHUVA[i], cor: CHUVA[i] >= 60 ? 'var(--vrn-azul)' : 'var(--vrn-cinza)', dica: '<strong>' + x + 'h</strong><br>' + CHUVA[i] + '% de chance de chuva' };
+          })
+        }
+      },
+      {
+        aba: 'Calor',
+        painel:
+          '<div class="vrn-dupla"><div>' +
+            '<p class="vrn-chave">' + traco('tinta') + 'Temperatura máxima</p>' +
+            '<p class="vrn-num vrn-num-m">' + grau(TEMP[iTemp]) + '</p>' +
+            '<p class="vrn-rotulo">por volta das <strong>' + h(iTemp) + '</strong></p></div><div>' +
+            '<p class="vrn-chave">' + traco('vermelho') + 'Sensação térmica</p>' +
+            '<p class="vrn-num vrn-num-m">' + grau(SENS[iSens]) + '</p>' +
+            '<p class="vrn-rotulo">por volta das <strong>' + h(iSens) + '</strong></p></div></div>' +
+          '<p class="vrn-extra">À noite, a temperatura cai para ' + grau(TEMP[TEMP.length - 1]) + ' às ' + h(TEMP.length - 1) + '</p>',
+        legenda: traco('tinta') + 'Temperatura <span style="display:inline-block;width:8px"></span>' + traco('vermelho') + 'Sensação térmica',
+        vis: {
+          tipo: 'linhas', min: 22, max: 42, grade: [25, 30, 35, 40], faixa: faixa,
+          formato: function (v, eixo) { return eixo ? v + '°' : grau(v); },
+          rotulos: HORAS.map(function (x) { return x + 'h'; }),
+          series: [{ nome: 'Temperatura', cor: 'var(--vrn-tinta)', valores: TEMP }, { nome: 'Sensação térmica', cor: 'var(--vrn-vermelho)', valores: SENS }],
+          marcar: [{ serie: 1, i: iSens }, { serie: 0, i: iTemp, abaixo: true }],
+          dicas: HORAS.map(function (x, i) { return '<strong>' + x + 'h</strong><br>Temperatura: ' + grau(TEMP[i]) + '<br>Sensação térmica: ' + grau(SENS[i]); })
+        }
+      }
+    ],
+    fonte: 'Fonte: Open-Meteo, que reúne previsões de centros meteorológicos (consulta de 03/10/2026); aviso do INMET. A previsão ainda pode mudar até domingo.',
+    tabela: {
+      colunas: ['Hora', 'Chance de chuva', 'Temperatura', 'Sensação'],
+      grupos: [{ linhas: HORAS.map(function (x, i) { return [x + 'h', CHUVA[i] + '%', grau(TEMP[i]), grau(SENS[i])]; }) }]
+    }
+  });
+})();
+</script>
+</body>
+</html>

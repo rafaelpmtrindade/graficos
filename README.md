@@ -10,6 +10,7 @@ Cada gráfico fica numa pasta e todos usam o motor comum em `comum/` (`vrn.js` +
 | `idade-2026` | Quase um em cada cinco eleitores de Vila Rica tem 60 anos ou mais | 700px |
 | `locais-de-votacao-2026` | Quatro locais concentram quase 86% do eleitorado de Vila Rica | 730px |
 | `genero-2026` | Homens são maioria entre os eleitores de Vila Rica | 740px |
+| `tempo-eleicao-2026` | Domingo de eleição deve ter calor forte e chuva no fim do dia em Vila Rica (previsão de 03/10) | 780px |
 
 ## Como embutir
 
