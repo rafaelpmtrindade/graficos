@@ -111,23 +111,34 @@
   }
 
   // ---------- Barras: uma por linha, rótulo em cima, número na ponta ----------
+  // Opcionais: l.partes [{valor, cor}] divide a barra (o número na ponta é a soma);
+  // v.trilho (cor) desenha o fundo da barra até v.max, para mostrar a parte de um todo;
+  // v.formato(valor) escreve o número da ponta.
   function Barras(camada, v, reduzido) {
     var box = document.createElement('div');
-    box.className = 'vrn-barras';
+    box.className = 'vrn-barras' + (v.trilho ? ' vrn-barras--trilho' : '');
+    if (v.trilho) box.style.setProperty('--vrn-trilho-cor', v.trilho);
     camada.appendChild(box);
-    var max = v.max || Math.max.apply(null, v.linhas.map(function (l) { return l.valor; }));
+    var formato = v.formato || n;
+    function total(l) { return l.partes ? soma(l.partes, 'valor') : l.valor; }
+    var max = v.max || Math.max.apply(null, v.linhas.map(total));
     var linhas = v.linhas.map(function (l) {
       var row = document.createElement('div');
       row.className = 'vrn-barra';
+      var fillHtml = l.partes
+        ? '<div class="vrn-barra-fill vrn-barra-partes">' + l.partes.map(function (p) {
+            return '<i style="--cor:' + p.cor + ';flex-grow:' + p.valor + '"></i>';
+          }).join('') + '</div>'
+        : '<div class="vrn-barra-fill"></div>';
       row.innerHTML = '<div class="vrn-barra-rotulo">' + l.rotulo + (l.extra ? '<span>' + l.extra + '</span>' : '') + '</div>' +
-        '<div class="vrn-barra-linha"><div class="vrn-barra-fill"></div><div class="vrn-barra-valor">' + n(l.valor) + '</div></div>';
+        '<div class="vrn-barra-linha">' + fillHtml + '<div class="vrn-barra-valor">' + formato(total(l)) + '</div></div>';
       var fill = row.querySelector('.vrn-barra-fill');
-      fill.style.setProperty('--cor', l.cor);
+      if (!l.partes) fill.style.setProperty('--cor', l.cor);
       box.appendChild(row);
-      return { row: row, fill: fill, dados: l };
+      return { row: row, fill: fill, dados: l, valor: total(l) };
     });
     var util = 0;
-    function largura(o) { o.fill.style.width = Math.max(2, o.dados.valor / max * util) + 'px'; }
+    function largura(o) { o.fill.style.width = Math.max(2, o.valor / max * util) + 'px'; }
 
     return {
       desenhar: function (W, H) {
@@ -137,6 +148,7 @@
         box.style.setProperty('--vrn-linha', alt + 'px');
         box.style.setProperty('--vrn-espessura', Math.max(8, Math.min(22, Math.round(alt * 0.36))) + 'px');
         util = Math.max(40, W - 64); // sobra para o número na ponta
+        box.style.setProperty('--vrn-util', util + 'px');
         linhas.forEach(function (o) { if (o.row.classList.contains('visivel')) largura(o); });
       },
       entrar: function (animar) {

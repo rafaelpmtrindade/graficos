@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Votação para deputado estadual em Vila Rica, 2022 e 2026</title>
+<meta name="robots" content="noindex, indexifembedded">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../comum/vrn.css">
+<style>
+  /* legenda com três itens: cada item inteiro, quebra entre eles no celular */
+  .vrn-legenda { flex-wrap: wrap; column-gap: 14px; row-gap: 2px; }
+  .vrn-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<figure id="vrn"></figure>
+<script src="../comum/vrn.js"></script>
+<script>
+(function () {
+  var n = VRN.n, pct = VRN.pct;
+
+  // Deputado estadual, Vila Rica (código 98990) e Mato Grosso.
+  // 2022: TSE, dados abertos (votação por município e zona; detalhe da apuração).
+  // 2026: TSE, arquivo oficial de totalização de 04/10/2026.
+  // Válidos = nominais + legenda + anulados sob judice (critério do percentual oficial do TSE).
+  var JANOVAN = {
+    nome: 'Janovan Rios', partido: 'PSB', ano: 2022,
+    vr: 3701, validosVr: 9176, mt: 4975, suplente: 7,
+    ultimo: { nome: 'Dr. Eugênio', votos: 25378 }
+  };
+  var ABMAEL = {
+    nome: 'Abmael Borges', partido: 'PL', ano: 2026,
+    vr: 4035, validosVr: 9885, mt: 9949, suplente: 2,
+    ultimo: { nome: 'Alcino Barcelos', votos: 22624 }
+  };
+  [JANOVAN, ABMAEL].forEach(function (c) {
+    c.fora = c.mt - c.vr;
+    c.fatia = c.vr / c.validosVr;
+    c.faltou = c.ultimo.votos - c.mt;
+  });
+  var DOIS = [JANOVAN, ABMAEL];
+
+  var VERMELHO = 'var(--vrn-vermelho)', AZUL = 'var(--vrn-azul)', CINZA = 'var(--vrn-cinza)';
+  function item(cor, texto) { return '<span class="vrn-item"><span class="vrn-bolinha" style="background:' + cor + '"></span>' + texto + '</span>'; }
+  function quem(c) { return c.nome + ' · ' + c.ano; }
+  function dupla(f) {
+    return '<div class="vrn-dupla">' + DOIS.map(function (c) { return '<div>' + f(c) + '</div>'; }).join('') + '</div>';
+  }
+  function partes(c) {
+    return [{ valor: c.vr, cor: VERMELHO }, { valor: c.fora, cor: AZUL }];
+  }
+  function dicaVotos(c) {
+    return '<strong>' + c.nome + ' (' + c.partido + '), ' + c.ano + '</strong><br>' +
+      n(c.mt) + ' votos em Mato Grosso<br>' + n(c.vr) + ' em Vila Rica · ' + n(c.fora) + ' em outros municípios';
+  }
+
+  VRN.grafico({
+    id: 'deputado-estadual-2026',
+    chapeu: 'Eleições 2026',
+    titulo: 'Mesma fatia em Vila Rica, votação diferente fora dela',
+    subtitulo: 'Janovan Rios (PSB) em 2022 e Abmael Borges (PL) em 2026, candidatos a deputado estadual',
+    passos: [
+      {
+        aba: 'Em Vila Rica',
+        painel: dupla(function (c) {
+          return '<p class="vrn-chave">' + quem(c) + '</p>' +
+            '<p class="vrn-num vrn-num-m">' + pct(c.fatia, 2) + '</p>' +
+            '<p class="vrn-rotulo"><strong>' + n(c.vr) + '</strong> de ' + n(c.validosVr) + ' votos válidos da cidade</p>';
+        }),
+        legenda: item(VERMELHO, 'votos do candidato') + item(CINZA, 'demais votos válidos'),
+        vis: {
+          tipo: 'barras', max: 1, trilho: CINZA,
+          formato: function (v) { return pct(v, 2); },
+          linhas: DOIS.map(function (c) {
+            return {
+              rotulo: c.nome, extra: c.partido + ' · ' + c.ano, valor: c.fatia, cor: VERMELHO,
+              dica: '<strong>' + c.nome + ' (' + c.partido + '), ' + c.ano + '</strong><br>' +
+                n(c.vr) + ' de ' + n(c.validosVr) + ' votos válidos em Vila Rica · ' + pct(c.fatia, 2)
+            };
+          })
+        }
+      },
+      {
+        aba: 'Fora da cidade',
+        painel: dupla(function (c) {
+          return '<p class="vrn-chave">' + quem(c) + '</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + c.fora + '">' + n(c.fora) + '</p>' +
+            '<p class="vrn-rotulo">votos fora de Vila Rica, de <strong>' + n(c.mt) + '</strong> no estado</p>';
+        }),
+        legenda: item(VERMELHO, 'em Vila Rica') + item(AZUL, 'em outros municípios'),
+        vis: {
+          tipo: 'barras',
+          linhas: DOIS.map(function (c) {
+            return { rotulo: c.nome, extra: c.partido + ' · ' + c.ano + ' · total no estado', partes: partes(c), dica: dicaVotos(c) };
+          })
+        }
+      },
+      {
+        aba: 'Quanto faltou',
+        painel: dupla(function (c) {
+          return '<p class="vrn-chave">' + quem(c) + '</p>' +
+            '<p class="vrn-num vrn-num-m" data-conta="' + c.faltou + '">' + n(c.faltou) + '</p>' +
+            '<p class="vrn-rotulo">votos a menos que o último eleito do <strong>' + c.partido + '</strong></p>';
+        }),
+        legenda: item(VERMELHO, 'em Vila Rica') + item(AZUL, 'em outros municípios') + item(CINZA, 'último eleito do partido'),
+        vis: {
+          tipo: 'barras',
+          linhas: [].concat.apply([], DOIS.map(function (c) {
+            return [
+              { rotulo: c.nome, extra: c.partido + ' · ' + c.ano + ' · ' + c.suplente + 'º suplente', partes: partes(c), dica: dicaVotos(c) },
+              {
+                rotulo: c.ultimo.nome, extra: 'último eleito do ' + c.partido + ' · ' + c.ano, valor: c.ultimo.votos, cor: CINZA,
+                dica: '<strong>' + c.ultimo.nome + ' (' + c.partido + '), ' + c.ano + '</strong><br>' +
+                  n(c.ultimo.votos) + ' votos · último eleito do partido<br>' + n(c.faltou) + ' a mais que ' + c.nome
+              }
+            ];
+          }))
+        }
+      }
+    ],
+    fonte: 'Fonte: TSE (resultado oficial de 2026 e dados abertos de 2022). Percentuais sobre os votos válidos.',
+    tabela: {
+      colunas: ['', JANOVAN.nome + ' (' + JANOVAN.ano + ')', ABMAEL.nome + ' (' + ABMAEL.ano + ')'],
+      grupos: [
+        {
+          titulo: 'Em Vila Rica',
+          linhas: [
+            ['Votos', n(JANOVAN.vr), n(ABMAEL.vr)],
+            ['Votos válidos da cidade', n(JANOVAN.validosVr), n(ABMAEL.validosVr)],
+            ['% dos válidos', pct(JANOVAN.fatia, 2).replace('%', ''), pct(ABMAEL.fatia, 2).replace('%', '')]
+          ]
+        },
+        {
+          titulo: 'Em Mato Grosso',
+          linhas: [
+            ['Votos em outros municípios', n(JANOVAN.fora), n(ABMAEL.fora)],
+            ['Total no estado', n(JANOVAN.mt), n(ABMAEL.mt)],
+            ['Partido', JANOVAN.partido, ABMAEL.partido],
+            ['Situação', JANOVAN.suplente + 'º suplente', ABMAEL.suplente + 'º suplente'],
+            ['Último eleito do partido', JANOVAN.ultimo.nome + ', ' + n(JANOVAN.ultimo.votos), ABMAEL.ultimo.nome + ', ' + n(ABMAEL.ultimo.votos)],
+            ['Diferença para o último eleito', n(JANOVAN.faltou), n(ABMAEL.faltou)]
+          ]
+        }
+      ]
+    }
+  });
+})();
+</script>
+</body>
+</html>
